@@ -177,75 +177,149 @@ export default function HistoryPage() {
                 <p className="text-sm mt-1">Make a deposit or withdrawal to see your transaction history</p>
               </div>
             ) : (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-800/50 text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Type</th>
-                    <th className="px-6 py-4 font-medium">Amount (USD)</th>
-                    <th className="px-6 py-4 font-medium">Amount (INR)</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
+              <div>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800/50 text-gray-400">
+                      <tr>
+                        <th className="px-6 py-4 font-medium">Type</th>
+                        <th className="px-6 py-4 font-medium">Amount (USD)</th>
+                        <th className="px-6 py-4 font-medium">Amount (INR)</th>
+                        <th className="px-6 py-4 font-medium">Status</th>
+                        <th className="px-6 py-4 font-medium">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {combinedTransactions.map((tx) => (
+                        <tr key={tx.id} className="hover:bg-gray-800/20 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'
+                                }`}>
+                                {tx.transactionType === 'DEPOSIT'
+                                  ? <ArrowDownToLine className="w-3 h-3" />
+                                  : <ArrowUpFromLine className="w-3 h-3" />}
+                                {tx.transactionType}
+                              </span>
+                              {tx.transactionType === 'WITHDRAWAL' && tx.method && (
+                                <span className={`text-[10px] font-semibold w-fit px-1.5 py-0.5 rounded border ${tx.method === 'USDT'
+                                  ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  }`}>
+                                  {tx.method === 'USDT' ? 'Wallet Transfer (USDT)' : 'Bank Transfer (INR)'}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-medium text-white">${tx.amountUSD.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-gray-300">{tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <span className={statusBadge(tx.status)}>
+                                {statusIcon(tx.status)}
+                                {tx.status}
+                              </span>
+                              {tx.status === 'APPROVED' && (
+                                <span className="text-[10px] text-blue-400 font-semibold block leading-tight mt-0.5">
+                                  The amount will credit in your ac within 3 hours
+                                </span>
+                              )}
+                              {(tx.status === 'PAID' || tx.status === 'COMPLETED' || tx.status === 'SUCCESS') && tx.utr && (
+                                <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
+                                  TxID/UTR: {tx.utr}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500">
+                            <div>{new Date(tx.createdAt).toLocaleString()}</div>
+                            {(tx.status === 'PAID' || tx.status === 'COMPLETED' || tx.status === 'SUCCESS') && (
+                              <div className="text-[10px] text-emerald-400 font-semibold mt-1">
+                                Paid: {new Date(tx.updatedAt).toLocaleString()}
+                              </div>
+                            )}
+                            {tx.status === 'APPROVED' && (
+                              <div className="text-[10px] text-blue-400 font-semibold mt-1">
+                                Approved: {new Date(tx.updatedAt).toLocaleString()}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile list view */}
+                <div className="md:hidden divide-y divide-gray-800">
                   {combinedTransactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4">
+                    <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
+                      <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'
-                            }`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
                             {tx.transactionType === 'DEPOSIT'
                               ? <ArrowDownToLine className="w-3 h-3" />
                               : <ArrowUpFromLine className="w-3 h-3" />}
                             {tx.transactionType}
                           </span>
                           {tx.transactionType === 'WITHDRAWAL' && tx.method && (
-                            <span className={`text-[10px] font-semibold w-fit px-1.5 py-0.5 rounded border ${tx.method === 'USDT'
+                            <span className={`text-[9px] font-semibold w-fit px-1.5 py-0.5 rounded border ${tx.method === 'USDT'
                               ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                               : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                               }`}>
-                              {tx.method === 'USDT' ? 'Wallet Transfer (USDT)' : 'Bank Transfer (INR)'}
+                              {tx.method === 'USDT' ? 'Wallet (USDT)' : 'Bank (INR)'}
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 font-medium text-white">${tx.amountUSD.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-300">{tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={statusBadge(tx.status)}>
-                            {statusIcon(tx.status)}
-                            {tx.status}
-                          </span>
-                          {tx.status === 'APPROVED' && (
-                            <span className="text-[10px] text-blue-400 font-semibold block leading-tight mt-0.5">
-                              The amount will credit in your ac within 3 hours
-                            </span>
-                          )}
-                          {(tx.status === 'PAID' || tx.status === 'COMPLETED' || tx.status === 'SUCCESS') && tx.utr && (
-                            <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
-                              TxID/UTR: {tx.utr}
-                            </span>
-                          )}
+                        <span className={statusBadge(tx.status)}>
+                          {tx.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div>
+                          <p className="text-[10px] text-gray-500">USD Amount</p>
+                          <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(2)}</p>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">
-                        <div>{new Date(tx.createdAt).toLocaleString()}</div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-500">INR Value</p>
+                          <p className="font-bold text-gray-300 font-mono">
+                            {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}
+                          </p>
+                        </div>
+                      </div>
+                      {tx.utr && (
+                        <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-850 font-mono text-indigo-400 break-all select-all">
+                          TxID/UTR: {tx.utr}
+                        </div>
+                      )}
+                      {tx.status === 'APPROVED' && (
+                        <p className="text-[9px] text-blue-400 font-medium">
+                          The amount will credit in your ac within 3 hours
+                        </p>
+                      )}
+                      <div className="text-[10px] text-gray-500 flex flex-col gap-0.5 pt-2 border-t border-gray-800/30">
+                        <div className="flex justify-between">
+                          <span>Date Requested:</span>
+                          <span>{new Date(tx.createdAt).toLocaleString()}</span>
+                        </div>
                         {(tx.status === 'PAID' || tx.status === 'COMPLETED' || tx.status === 'SUCCESS') && (
-                          <div className="text-[10px] text-emerald-400 font-semibold mt-1">
-                            Paid: {new Date(tx.updatedAt).toLocaleString()}
+                          <div className="flex justify-between text-emerald-400">
+                            <span>Paid Date:</span>
+                            <span>{new Date(tx.updatedAt).toLocaleString()}</span>
                           </div>
                         )}
                         {tx.status === 'APPROVED' && (
-                          <div className="text-[10px] text-blue-400 font-semibold mt-1">
-                            Approved: {new Date(tx.updatedAt).toLocaleString()}
+                          <div className="flex justify-between text-blue-400">
+                            <span>Approved Date:</span>
+                            <span>{new Date(tx.updatedAt).toLocaleString()}</span>
                           </div>
                         )}
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -260,33 +334,73 @@ export default function HistoryPage() {
                 <p className="text-sm mt-1">Submit a crypto deposit to get started</p>
               </div>
             ) : (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-800/50 text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Tx Hash</th>
-                    <th className="px-6 py-4 font-medium">USD</th>
-                    <th className="px-6 py-4 font-medium">INR Value</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
+              <div>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800/50 text-gray-400">
+                      <tr>
+                        <th className="px-6 py-4 font-medium">Tx Hash</th>
+                        <th className="px-6 py-4 font-medium">USD</th>
+                        <th className="px-6 py-4 font-medium">INR Value</th>
+                        <th className="px-6 py-4 font-medium">Status</th>
+                        <th className="px-6 py-4 font-medium">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {deposits.map((d) => (
+                        <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
+                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs truncate max-w-[200px] select-all">{d.txHash}</td>
+                          <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-gray-300">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
+                          <td className="px-6 py-4">
+                            <span className={statusBadge(d.status)}>
+                              {statusIcon(d.status)}
+                              {d.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-gray-800">
                   {deposits.map((d) => (
-                    <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4 font-mono text-indigo-400 text-xs truncate max-w-[200px] select-all">{d.txHash}</td>
-                      <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-300">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
-                      <td className="px-6 py-4">
+                    <div key={d.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border bg-green-500/10 text-green-400 border-green-500/10">
+                          DEPOSIT
+                        </span>
                         <span className={statusBadge(d.status)}>
-                          {statusIcon(d.status)}
                           {d.status}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleString()}</td>
-                    </tr>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div>
+                          <p className="text-[10px] text-gray-500">USD Amount</p>
+                          <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(2)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-500">INR Value</p>
+                          <p className="font-bold text-gray-300 font-mono">
+                            {d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-850 font-mono text-indigo-400 break-all select-all">
+                        TxID: {d.txHash}
+                      </div>
+                      <div className="text-[10px] text-gray-500 flex justify-between pt-2 border-t border-gray-800/30">
+                        <span>Date submitted</span>
+                        <span>{new Date(d.createdAt).toLocaleString()}</span>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -301,60 +415,123 @@ export default function HistoryPage() {
                 <p className="text-sm mt-1">Request a withdrawal to see it here</p>
               </div>
             ) : (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-800/50 text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Method</th>
-                    <th className="px-6 py-4 font-medium">Holder</th>
-                    <th className="px-6 py-4 font-medium">USD</th>
-                    <th className="px-6 py-4 font-medium">INR</th>
-                    <th className="px-6 py-4 font-medium">UTR / TxID</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Requested</th>
-                    <th className="px-6 py-4 font-medium">Paid / Processed</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
+              <div>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-800/50 text-gray-400">
+                      <tr>
+                        <th className="px-6 py-4 font-medium">Method</th>
+                        <th className="px-6 py-4 font-medium">Holder</th>
+                        <th className="px-6 py-4 font-medium">USD</th>
+                        <th className="px-6 py-4 font-medium">INR</th>
+                        <th className="px-6 py-4 font-medium">UTR / TxID</th>
+                        <th className="px-6 py-4 font-medium">Status</th>
+                        <th className="px-6 py-4 font-medium">Requested</th>
+                        <th className="px-6 py-4 font-medium">Paid / Processed</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {withdrawals.map((w) => (
+                        <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border ${w.method === 'USDT'
+                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              }`}>
+                              {w.method === 'USDT' ? 'Wallet (USDT)' : 'Bank (INR)'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
+                          <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
+                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs select-all">{w.utr || '—'}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <span className={statusBadge(w.status)}>
+                                {statusIcon(w.status)}
+                                {w.status}
+                              </span>
+                              {w.status === 'APPROVED' && (
+                                <span className="text-[10px] text-blue-400 font-semibold block leading-tight mt-0.5">
+                                  The amount will credit in your ac after 3 hours
+                                </span>
+                              )}
+                              {(w.status === 'PAID' || w.status === 'COMPLETED') && w.utr && (
+                                <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
+                                  TxID/UTR: {w.utr}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
+                          <td className="px-6 py-4 text-gray-500 text-xs">
+                            {w.status === 'PENDING' ? '—' : new Date(w.updatedAt).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-gray-800">
                   {withdrawals.map((w) => (
-                    <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border ${w.method === 'USDT'
+                    <div key={w.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${w.method === 'USDT'
                           ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                           : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                           }`}>
                           {w.method === 'USDT' ? 'Wallet (USDT)' : 'Bank (INR)'}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
-                      <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
-                      <td className="px-6 py-4 font-mono text-indigo-400 text-xs select-all">{w.utr || '—'}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={statusBadge(w.status)}>
-                            {statusIcon(w.status)}
-                            {w.status}
-                          </span>
-                          {w.status === 'APPROVED' && (
-                            <span className="text-[10px] text-blue-400 font-semibold block leading-tight mt-0.5">
-                              The amount will credit in your ac after 3 hours
-                            </span>
-                          )}
-                          {(w.status === 'PAID' || w.status === 'COMPLETED') && w.utr && (
-                            <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
-                              TxID/UTR: {w.utr}
-                            </span>
-                          )}
+                        <span className={statusBadge(w.status)}>
+                          {w.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div>
+                          <p className="text-[10px] text-gray-500">USD Amount</p>
+                          <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(2)}</p>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
-                      <td className="px-6 py-4 text-gray-500 text-xs">
-                        {w.status === 'PENDING' ? '—' : new Date(w.updatedAt).toLocaleString()}
-                      </td>
-                    </tr>
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-500">INR Amount</p>
+                          <p className="font-bold text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400 space-y-1 bg-gray-950 p-2.5 rounded border border-gray-850">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] text-gray-500">Beneficiary:</span>
+                          <span className="font-medium text-white">{w.accountHolder}</span>
+                        </div>
+                        {w.utr && (
+                          <div className="flex justify-between font-mono text-[10px] text-indigo-400 select-all pt-1 border-t border-gray-800/40">
+                            <span>UTR:</span>
+                            <span>{w.utr}</span>
+                          </div>
+                        )}
+                      </div>
+                      {w.status === 'APPROVED' && (
+                        <p className="text-[9px] text-blue-400 font-medium">
+                          The amount will credit in your ac after 3 hours
+                        </p>
+                      )}
+                      <div className="text-[10px] text-gray-500 flex flex-col gap-0.5 pt-2 border-t border-gray-800/30">
+                        <div className="flex justify-between">
+                          <span>Date Requested:</span>
+                          <span>{new Date(w.createdAt).toLocaleString()}</span>
+                        </div>
+                        {w.status !== 'PENDING' && (
+                          <div className="flex justify-between text-emerald-400">
+                            <span>Processed Date:</span>
+                            <span>{new Date(w.updatedAt).toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
           </div>
         )}

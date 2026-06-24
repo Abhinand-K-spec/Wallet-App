@@ -283,7 +283,8 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <div>
-              <div className="overflow-x-auto">
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-900/50">
@@ -356,6 +357,76 @@ export default function AdminUsersPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-800">
+                {users.map(u => {
+                  const isSelf = u.id === currentAdmin?.id;
+                  const isSuspended = u.status === 'SUSPENDED';
+                  return (
+                    <div key={u.id} className="p-4 space-y-4 hover:bg-gray-800/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs text-indigo-400 font-semibold">{u.userId}</span>
+                        <div className="flex gap-2">
+                          <span className={roleBadge(u.role)}>{u.role}</span>
+                          <span className={statusBadge(u.status)}>{u.status}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <p className="text-[10px] text-gray-500">Email Address</p>
+                        <p className="font-medium text-gray-200 break-all text-xs">
+                          {u.email}
+                          {isSelf && <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-mono ml-1.5 font-semibold">You</span>}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-3 border-t border-gray-800/30">
+                        <div>
+                          <p className="text-[10px] text-gray-500">Registered</p>
+                          <p className="text-gray-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                        </div>
+
+                        <div>
+                          {isSelf ? (
+                            <span className="text-xs text-gray-600 flex items-center gap-1.5">
+                              <Shield className="w-3.5 h-3.5" />
+                              System Protected
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleToggleStatus(u.id)}
+                              disabled={actionLoading === u.id}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border shadow-sm cursor-pointer ${
+                                isSuspended
+                                  ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:border-emerald-500/50'
+                                  : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30 hover:border-red-500/50'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {actionLoading === u.id ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : isSuspended ? (
+                                <>
+                                  <UserCheck className="w-3.5 h-3.5" />
+                                  Activate
+                                </>
+                              ) : (
+                                <>
+                                  <UserX className="w-3.5 h-3.5" />
+                                  Suspend
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Pagination Controls */}

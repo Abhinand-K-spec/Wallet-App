@@ -435,31 +435,66 @@ export default function AdminDepositsPage() {
         {processedDeposits.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-400 mb-4">Processed Deposits</h2>
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-800/50 text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">User</th>
-                    <th className="px-6 py-4 font-medium">Amount</th>
-                    <th className="px-6 py-4 font-medium">Rate</th>
-                    <th className="px-6 py-4 font-medium">INR Value</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {processedDeposits.map((d) => (
-                    <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4 text-gray-300">{d.user.email}</td>
-                      <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-400 font-mono">{d.adminEnteredRate ? `₹${d.adminEnteredRate}` : '—'}</td>
-                      <td className="px-6 py-4 text-gray-300 font-mono">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
-                      <td className="px-6 py-4"><span className={statusBadge(d.status)}>{d.status}</span></td>
-                      <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleDateString()}</td>
+            <div>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-800/50 text-gray-400">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">User</th>
+                      <th className="px-6 py-4 font-medium">Amount</th>
+                      <th className="px-6 py-4 font-medium">Rate</th>
+                      <th className="px-6 py-4 font-medium">INR Value</th>
+                      <th className="px-6 py-4 font-medium">Status</th>
+                      <th className="px-6 py-4 font-medium">Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {processedDeposits.map((d) => (
+                      <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
+                        <td className="px-6 py-4 text-gray-300">{d.user.email}</td>
+                        <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-gray-400 font-mono">{d.adminEnteredRate ? `₹${d.adminEnteredRate}` : '—'}</td>
+                        <td className="px-6 py-4 text-gray-300 font-mono">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
+                        <td className="px-6 py-4"><span className={statusBadge(d.status)}>{d.status}</span></td>
+                        <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-800">
+                {processedDeposits.map((d) => (
+                  <div key={d.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]">{d.user.email}</span>
+                      <span className={statusBadge(d.status)}>{d.status}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <p className="text-[10px] text-gray-500">Amount (USD)</p>
+                        <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-500">Rate</p>
+                        <p className="font-medium text-gray-400 font-mono">{d.adminEnteredRate ? `₹${d.adminEnteredRate}` : '—'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-500">INR Value</p>
+                        <p className="font-bold text-gray-300 font-mono">
+                          {d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 flex justify-between pt-2 border-t border-gray-800/30">
+                      <span>Submitted At</span>
+                      <span>{new Date(d.createdAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

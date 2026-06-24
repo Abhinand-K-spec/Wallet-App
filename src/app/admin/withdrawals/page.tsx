@@ -502,55 +502,131 @@ export default function AdminWithdrawalsPage() {
         {completedWithdrawals.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-400 mb-4">Completed / Rejected</h2>
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-800/50 text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">User</th>
-                    <th className="px-6 py-4 font-medium">USD</th>
-                    <th className="px-6 py-4 font-medium">INR</th>
-                    <th className="px-6 py-4 font-medium">Payout Info</th>
-                    <th className="px-6 py-4 font-medium">UTR / TxID</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium">Requested</th>
-                    <th className="px-6 py-4 font-medium">Paid / Processed</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {completedWithdrawals.map((w) => (
-                    <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4 text-gray-300">{w.user.email}</td>
-                      <td className="px-6 py-4 font-medium text-white font-mono">${w.amountUSD.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
-                      <td className="px-6 py-4 text-gray-400 text-xs">
+            <div>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-800/50 text-gray-400">
+                    <tr>
+                      <th className="px-6 py-4 font-medium">User</th>
+                      <th className="px-6 py-4 font-medium">USD</th>
+                      <th className="px-6 py-4 font-medium">INR</th>
+                      <th className="px-6 py-4 font-medium">Payout Info</th>
+                      <th className="px-6 py-4 font-medium">UTR / TxID</th>
+                      <th className="px-6 py-4 font-medium">Status</th>
+                      <th className="px-6 py-4 font-medium">Requested</th>
+                      <th className="px-6 py-4 font-medium">Paid / Processed</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {completedWithdrawals.map((w) => (
+                      <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
+                        <td className="px-6 py-4 text-gray-300">{w.user.email}</td>
+                        <td className="px-6 py-4 font-medium text-white font-mono">${w.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
+                        <td className="px-6 py-4 text-gray-400 text-xs">
+                          {w.method === 'USDT' ? (
+                            <>
+                              <span className="text-indigo-400 font-semibold block text-[10px] mb-0.5">USDT Wallet Transfer</span>
+                              <span className="font-medium text-gray-300">{w.accountHolder}</span>
+                              <div className="flex items-center gap-1 font-mono text-xs break-all select-all">
+                                <span className="truncate max-w-[120px]" title={w.walletAddress || ''}>{w.walletAddress}</span>
+                                <CopyButton text={w.walletAddress || ''} />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-emerald-400 font-semibold block text-[10px] mb-0.5">Bank Transfer</span>
+                              <span className="font-medium text-gray-300">{w.accountHolder}</span>
+                              <div className="flex items-center gap-1 text-xs">
+                                <span className="font-mono select-all">{w.accountNumber}</span>
+                                <CopyButton text={w.accountNumber || ''} />
+                              </div>
+                            </>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-indigo-400 font-mono text-xs">{w.utr || '—'}</td>
+                        <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
+                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.updatedAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-800">
+                {completedWithdrawals.map((w) => (
+                  <div key={w.id} className="p-4 space-y-4 hover:bg-gray-800/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]">{w.user.email}</span>
+                      <span className={statusBadge(w.status)}>{w.status}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <p className="text-[10px] text-gray-500">Amount (USD)</p>
+                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-gray-500">Amount (INR)</p>
+                        <p className="font-bold text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400 space-y-2 bg-gray-950 p-3 rounded-2xl border border-gray-850">
+                      <div>
                         {w.method === 'USDT' ? (
                           <>
-                            <span className="text-indigo-400 font-semibold block text-[10px] mb-0.5">USDT Wallet Transfer</span>
-                            <span className="font-medium text-gray-300">{w.accountHolder}</span>
-                            <div className="flex items-center gap-1 font-mono text-xs break-all select-all">
-                              <span className="truncate max-w-[120px]" title={w.walletAddress || ''}>{w.walletAddress}</span>
-                              <CopyButton text={w.walletAddress || ''} />
+                            <span className="text-indigo-400 font-bold block text-[9px] uppercase tracking-wider mb-0.5">USDT Wallet Transfer</span>
+                            <div className="flex justify-between items-center text-[11px] text-gray-400">
+                              <span>Recipient:</span>
+                              <span className="text-white font-medium">{w.accountHolder}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1 pt-1 border-t border-gray-900">
+                              <span>Wallet:</span>
+                              <div className="flex items-center gap-1 font-mono text-indigo-400 break-all select-all">
+                                <span className="truncate max-w-[100px]" title={w.walletAddress || ''}>{w.walletAddress}</span>
+                                <CopyButton text={w.walletAddress || ''} />
+                              </div>
                             </div>
                           </>
                         ) : (
                           <>
-                            <span className="text-emerald-400 font-semibold block text-[10px] mb-0.5">Bank Transfer</span>
-                            <span className="font-medium text-gray-300">{w.accountHolder}</span>
-                            <div className="flex items-center gap-1 text-xs">
-                              <span className="font-mono select-all">{w.accountNumber}</span>
-                              <CopyButton text={w.accountNumber || ''} />
+                            <span className="text-emerald-400 font-bold block text-[9px] uppercase tracking-wider mb-0.5">Bank Transfer</span>
+                            <div className="flex justify-between items-center text-[11px] text-gray-400">
+                              <span>Beneficiary:</span>
+                              <span className="text-white font-medium">{w.accountHolder}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1 pt-1 border-t border-gray-900">
+                              <span>Account:</span>
+                              <div className="flex items-center gap-1">
+                                <span className="font-mono text-gray-300 select-all">{w.accountNumber}</span>
+                                <CopyButton text={w.accountNumber || ''} />
+                              </div>
                             </div>
                           </>
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-indigo-400 font-mono text-xs">{w.utr || '—'}</td>
-                      <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
-                      <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
-                      <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.updatedAt).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      {w.utr && (
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-900 text-[11px] text-gray-400">
+                          <span>UTR / TxID:</span>
+                          <span className="font-mono text-indigo-400 select-all">{w.utr}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-gray-500 flex flex-col gap-0.5 pt-2 border-t border-gray-800/30">
+                      <div className="flex justify-between">
+                        <span>Requested At:</span>
+                        <span>{new Date(w.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-emerald-400">
+                        <span>Processed At:</span>
+                        <span>{new Date(w.updatedAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
