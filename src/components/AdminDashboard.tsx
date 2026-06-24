@@ -169,7 +169,7 @@ const AdminDashboard = () => {
                   Admin Wallet Details
                 </h2>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 font-medium">
-                  {stats.walletDetails.address.startsWith('T') ? 'TRON Mainnet' : 'Ethereum Mainnet'}
+                  {'TRON Mainnet'}
                 </span>
               </div>
               <div className="space-y-4">
@@ -211,9 +211,9 @@ const AdminDashboard = () => {
                 <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
                 <div className="text-xs text-gray-400 leading-relaxed">
                   <span className="text-orange-400 font-semibold block mb-0.5">
-                    {stats.walletDetails.address.startsWith('T') ? 'Tronscan API Inactive' : 'Etherscan API Inactive'}
+                    Tronscan API Inactive
                   </span>
-                  Add <code className="text-orange-300 font-mono">{stats.walletDetails.address.startsWith('T') ? 'TRONSCAN_API_KEY' : 'ETHERSCAN_API_KEY'}</code> to your backend variables to extract live transaction logs directly.
+                  Add <code className="text-orange-300 font-mono">TRONSCAN_API_KEY</code> to your backend variables to extract live transaction logs directly.
                 </div>
               </div>
             )}
@@ -273,7 +273,7 @@ const AdminDashboard = () => {
                 <p className="text-gray-400 text-sm mb-1">No transaction logs retrieved</p>
                 <p className="text-xs text-gray-600 max-w-[280px]">
                   {stats.walletDetails.etherscanConfigured
-                    ? (stats.walletDetails.address.startsWith('T') ? 'No TRC-20 token transactions found on TRON for this address.' : 'No ERC-20 token transactions found on mainnet for this address.')
+                    ? 'No TRC-20 token transactions found on TRON for this address.'
                     : 'Transaction scanning is disabled because the API Key is not set.'}
                 </p>
               </div>
@@ -294,10 +294,7 @@ const AdminDashboard = () => {
                         <tr key={tx.hash} className="hover:bg-gray-800/20 transition-colors group">
                           <td className="py-3 pl-2 font-mono text-xs text-indigo-400 group-hover:text-indigo-300">
                             <a
-                              href={stats.walletDetails?.address.startsWith('T') 
-                                ? `https://tronscan.org/#/transaction/${tx.hash}` 
-                                : `https://etherscan.io/tx/${tx.hash}`
-                              }
+                              href={`https://tronscan.org/#/transaction/${tx.hash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1.5 cursor-pointer"
@@ -310,7 +307,7 @@ const AdminDashboard = () => {
                             {tx.from}
                           </td>
                           <td className="py-3 font-semibold text-green-400">
-                            {tx.amountUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} {tx.tokenSymbol || 'ERC20'}
+                            {tx.amountUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} {tx.tokenSymbol || 'TRC20'}
                           </td>
                           <td className="py-3 pr-2 text-right text-xs text-gray-500">
                             {new Date(tx.timestamp).toLocaleString()}

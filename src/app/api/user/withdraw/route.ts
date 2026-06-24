@@ -111,9 +111,8 @@ export async function POST(request: Request) {
       }
 
       const isTrc20 = /^T[a-zA-Z0-9]{33}$/.test(walletAddress);
-      const isErc20 = /^0x[a-fA-F0-9]{40}$/.test(walletAddress);
-      if (!isTrc20 && !isErc20) {
-        return NextResponse.json({ error: 'Invalid USDT wallet address. Must be a valid TRC20 (starts with T) or ERC20 (starts with 0x) address' }, { status: 400 });
+      if (!isTrc20) {
+        return NextResponse.json({ error: 'Invalid USDT wallet address. Must be a valid TRC20 (starts with T) address' }, { status: 400 });
       }
 
       finalAmountUSD = parseFloat(amountUSD);

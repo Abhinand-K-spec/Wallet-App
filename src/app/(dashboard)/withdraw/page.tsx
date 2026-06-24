@@ -126,9 +126,8 @@ export default function WithdrawPage() {
       }
     } else {
       const isTrc20 = /^T[a-zA-Z0-9]{33}$/.test(walletAddress);
-      const isErc20 = /^0x[a-fA-F0-9]{40}$/.test(walletAddress);
-      if (!isTrc20 && !isErc20) {
-        setError('Please enter a valid USDT Wallet Address (TRC20 starting with T, or ERC20 starting with 0x)');
+      if (!isTrc20) {
+        setError('Please enter a valid USDT Wallet Address (TRC20 starting with T)');
         setLoading(false);
         return;
       }
@@ -398,8 +397,9 @@ export default function WithdrawPage() {
                       className="w-full bg-gray-950 border border-gray-850 text-white rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500/80 font-mono text-sm"
                       placeholder="T..."
                       required
+                      pattern="^T[a-zA-Z0-9]{33}$"
                     />
-                    <p className="text-gray-500 text-[10px] mt-1.5 leading-relaxed font-sans">Please double-check your network destination (TRC20/ERC20) before submitting.</p>
+                     <p className="text-gray-500 text-[10px] mt-1.5 leading-relaxed font-sans">Please double-check your network destination (TRC20 only) before submitting.</p>
                   </div>
                 </div>
               </>

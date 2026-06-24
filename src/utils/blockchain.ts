@@ -8,221 +8,7 @@ interface OnChainResult {
   message?: string;
 }
 
-// ---------------------------------------------------------
-// ETHEREUM (ERC-20 USDT) HELPERS
-// ---------------------------------------------------------
-
-const verifyEthereumUSDT = async (txHash: string, expectedRecipient: string): Promise<OnChainResult> => {
-  const ethHashRegex = /^0x([A-Fa-f0-9]{64})$/;
-  if (!ethHashRegex.test(txHash)) {
-    console.log(`[Blockchain Verification] TxHash '${txHash}' is not a standard Ethereum hash. Falling back to mock verification.`);
-    return {
-      success: true,
-      network: 'MOCK_ETH',
-      fromAddress: '0xMockUserWalletAddress7777777777777777',
-      toAddress: expectedRecipient,
-      amountUSD: 1000.0,
-      txHash,
-    };
-  }
-
-  try {
-    const rpcUrl = 'https://ethereum.publicnode.com';
-
-    // 1. Fetch transaction details
-    const txResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'eth_getTransactionByHash',
-        params: [txHash],
-        id: 1,
-      }),
-    });
-
-    const txData = await txResponse.json();
-    if (!txData.result) {
-      return {
-        success: false,
-        network: 'ETH',
-        fromAddress: '',
-        toAddress: '',
-        amountUSD: 0,
-        message: 'Transaction not found on the Ethereum blockchain.',
-      };
-    }
-
-    const tx = txData.result;
-
-    // 2. Fetch transaction receipt to check execution status
-    const receiptResponse = await fetch(rpcUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'eth_getTransactionReceipt',
-        params: [txHash],
-        id: 1,
-      }),
-    });
-
-    const receiptData = await receiptResponse.json();
-    if (receiptData.result && receiptData.result.status !== '0x1') {
-      return {
-        success: false,
-        network: 'ETH',
-        fromAddress: tx.from || '',
-        toAddress: tx.to || '',
-        amountUSD: 0,
-        message: 'Transaction failed/reverted on-chain.',
-      };
-    }
-
-    // 3. Inspect target contract (ERC20 transfer)
-    const input = tx.input;
-    if (!input || !input.startsWith('0xa9059cbb')) {
-      return {
-        success: false,
-        network: 'ETH',
-        fromAddress: tx.from || '',
-        toAddress: tx.to || '',
-        amountUSD: 0,
-        message: 'Transaction is not a standard ERC20 token transfer.',
-      };
-    }
-
-    const recipientPadding = input.substring(8, 72);
-    const recipientRaw = '0x' + recipientPadding.substring(24);
-    const amountHex = input.substring(72, 136);
-
-    const recipient = recipientRaw.toLowerCase();
-    const cleanExpected = expectedRecipient.trim().toLowerCase();
-
-    if (recipient !== cleanExpected) {
-      return {
-        success: false,
-        network: 'ETH',
-        fromAddress: tx.from || '',
-        toAddress: recipient,
-        amountUSD: 0,
-        message: `Recipient address '${recipient}' does not match expected admin address '${cleanExpected}'.`,
-      };
-    }
-
-    const amountValue = BigInt('0x' + amountHex);
-    const amountUSD = Number(amountValue) / 1000000;
-
-    return {
-      success: true,
-      network: 'ETH',
-      fromAddress: tx.from || '',
-      toAddress: recipient,
-      amountUSD,
-      txHash: tx.hash || txHash,
-    };
-  } catch (err: any) {
-    console.error('[Blockchain Verification] Error fetching tx details:', err);
-    return {
-      success: false,
-      network: 'ETH',
-      fromAddress: '',
-      toAddress: '',
-      amountUSD: 0,
-      message: `Error connecting to blockchain RPC: ${err.message || err}`,
-    };
-  }
-};
-
-const getEthereumWalletDetails = async (address: string) => {
-  const rpcUrls = [
-    'https://ethereum.publicnode.com',
-    'https://eth.llamarpc.com',
-    'https://rpc.ankr.com/eth'
-  ];
-
-  let ethBalance = 0;
-  let usdtBalance = 0;
-
-  for (const rpcUrl of rpcUrls) {
-    try {
-      const ethRes = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'eth_getBalance',
-          params: [address, 'latest'],
-          id: 1,
-        }),
-      });
-      const ethData = await ethRes.json();
-      if (ethData.result) {
-        ethBalance = Number(BigInt(ethData.result)) / 1e18;
-      }
-
-      const cleanAddress = address.replace('0x', '').padStart(64, '0');
-      const usdtCallData = '0x70a08231' + cleanAddress;
-      const usdtContract = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-
-      const usdtRes = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'eth_call',
-          params: [{ to: usdtContract, data: usdtCallData }, 'latest'],
-          id: 2,
-        }),
-      });
-      const usdtData = await usdtRes.json();
-      if (usdtData.result) {
-        usdtBalance = Number(BigInt(usdtData.result)) / 1e6;
-      }
-      break;
-    } catch (err) {
-      console.warn(`[Blockchain Utils] ETH RPC error on ${rpcUrl}:`, err);
-    }
-  }
-
-  return { ethBalance, usdtBalance };
-};
-
-const getEthereumOnChainTransactions = async (address: string, apiKey: string): Promise<any[]> => {
-  try {
-    const url = `https://api.etherscan.io/v2/api` +
-      `?chainid=1` +
-      `&module=account` +
-      `&action=tokentx` +
-      `&address=${address}` +
-      `&page=1` +
-      `&offset=10` +
-      `&sort=desc` +
-      `&apikey=${apiKey}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.status === '1' && Array.isArray(data.result)) {
-      return data.result.map((tx: any) => {
-        const decimals = Number(tx.tokenDecimal || 18);
-        const amount = Number(tx.value) / Math.pow(10, decimals);
-        return {
-          hash: tx.hash,
-          from: tx.from,
-          to: tx.to,
-          amountUSD: amount,
-          timestamp: Number(tx.timeStamp) * 1000,
-          blockNumber: tx.blockNumber,
-          tokenSymbol: tx.tokenSymbol || 'ERC20'
-        };
-      });
-    }
-  } catch (err) {
-    console.error('[Blockchain Utils] Error fetching from Etherscan:', err);
-  }
-  return [];
-};
+// Ethereum helpers removed (TRC20/TRON only support)
 
 
 // ---------------------------------------------------------
@@ -428,38 +214,20 @@ const getTronOnChainTransactions = async (address: string, apiKey: string): Prom
 
 
 // ---------------------------------------------------------
-// EXPORTED ROUTER INTERFACE (DYNAMIC SWITCHING)
+// EXPORTED ROUTER INTERFACE (TRC-20 / TRON ONLY)
 // ---------------------------------------------------------
 
 export const verifyOnChainUSDT = async (txHash: string, expectedRecipient: string): Promise<OnChainResult> => {
-  const isTron = expectedRecipient.trim().startsWith('T');
-  const apiKey = process.env.TRONSCAN_API_KEY || process.env.ETHERSCAN_API_KEY || '';
-
-  if (isTron) {
-    return verifyTronUSDT(txHash, expectedRecipient, apiKey);
-  } else {
-    return verifyEthereumUSDT(txHash, expectedRecipient);
-  }
+  const apiKey = process.env.TRONSCAN_API_KEY || '';
+  return verifyTronUSDT(txHash, expectedRecipient, apiKey);
 };
 
 export const getWalletOnChainDetails = async (address: string) => {
-  const isTron = address.trim().startsWith('T');
-  const apiKey = process.env.TRONSCAN_API_KEY || process.env.ETHERSCAN_API_KEY || '';
-
-  if (isTron) {
-    return getTronWalletDetails(address, apiKey);
-  } else {
-    return getEthereumWalletDetails(address);
-  }
+  const apiKey = process.env.TRONSCAN_API_KEY || '';
+  return getTronWalletDetails(address, apiKey);
 };
 
 export const getOnChainTransactions = async (address: string): Promise<any[]> => {
-  const isTron = address.trim().startsWith('T');
-  const apiKey = process.env.TRONSCAN_API_KEY || process.env.ETHERSCAN_API_KEY || '';
-
-  if (isTron) {
-    return getTronOnChainTransactions(address, apiKey);
-  } else {
-    return getEthereumOnChainTransactions(address, apiKey);
-  }
+  const apiKey = process.env.TRONSCAN_API_KEY || '';
+  return getTronOnChainTransactions(address, apiKey);
 };

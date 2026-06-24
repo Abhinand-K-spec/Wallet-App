@@ -189,7 +189,7 @@ const LoginPage = () => {
               {showOtpScreen ? (
                 'Please check your inbox for a 6-digit confirmation code. Enter the code to unlock your dashboard.'
               ) : (
-                'Scan, deposit, and withdraw. Experience the premium gateway for TRC20 and ERC20 stablecoins.'
+                'Scan, deposit, and withdraw. Experience the premium gateway for TRC20 stablecoins.'
               )}
             </p>
           </div>

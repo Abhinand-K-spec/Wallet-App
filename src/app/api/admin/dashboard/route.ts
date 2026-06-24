@@ -68,7 +68,7 @@ export async function GET() {
         address: adminWalletAddress,
         ethBalance,
         usdtBalance,
-        etherscanConfigured: !!(process.env.ETHERSCAN_API_KEY && process.env.ETHERSCAN_API_KEY !== 'YOUR_API_KEY_HERE'),
+        etherscanConfigured: !!(process.env.TRONSCAN_API_KEY && process.env.TRONSCAN_API_KEY !== 'YOUR_API_KEY_HERE'),
         onChainTransactions
       }
     });
