@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CryptoPay Wallet Dashboard",
+  title: "GetPay Wallet Dashboard",
   description: "Secure ERC20/TRC20 Wallet Application Dashboard",
 };
 

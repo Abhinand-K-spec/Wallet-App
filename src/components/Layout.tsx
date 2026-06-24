@@ -42,7 +42,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b border-gray-800">
           <Wallet className="w-6 h-6 text-indigo-500 mr-2" />
-          <span className="text-xl font-bold tracking-tight text-white">CryptoPay</span>
+          <span className="text-xl font-bold tracking-tight text-white">GetPay</span>
         </div>
         
         <div className="flex-1 py-6 px-4 space-y-1">
@@ -88,7 +88,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <header className="md:hidden h-16 border-b border-gray-800 bg-gray-900 flex items-center justify-between px-4">
           <div className="flex items-center">
             <Wallet className="w-6 h-6 text-indigo-500 mr-2" />
-            <span className="text-xl font-bold text-white">CryptoPay</span>
+            <span className="text-xl font-bold text-white">GetPay</span>
           </div>
           <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-white cursor-pointer">
             <LogOut className="w-5 h-5" />
