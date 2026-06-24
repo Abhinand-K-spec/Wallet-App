@@ -144,7 +144,7 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5 font-sans">Tx Hash Match</span>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-indigo-400 truncate max-w-[120px]" title={result.txHash || data.txHash}>
+                  <span className="font-mono text-indigo-400 break-all" title={result.txHash || data.txHash}>
                     {result.txHash || data.txHash}
                   </span>
                   {isHashMatch ? (
@@ -158,7 +158,7 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5 font-sans">Recipient Address</span>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-gray-300 truncate" title={result.toAddress}>
+                  <span className="font-mono text-gray-300 break-all select-all" title={result.toAddress}>
                     {result.toAddress || 'N/A'}
                   </span>
                   {isRecipientMatch ? (
@@ -203,7 +203,7 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5">Tx Hash Match</span>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-indigo-400 truncate max-w-[120px]" title={result.txHash || data.txHash}>
+                  <span className="font-mono text-indigo-400 break-all" title={result.txHash || data.txHash}>
                     {result.txHash || data.txHash}
                   </span>
                   {isHashMatch ? (
@@ -217,7 +217,7 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5">Recipient Address</span>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-gray-300 truncate" title={result.toAddress}>
+                  <span className="font-mono text-gray-300 break-all select-all" title={result.toAddress}>
                     {result.toAddress || 'N/A'}
                   </span>
                   {isRecipientMatch ? (
@@ -363,7 +363,7 @@ export default function AdminDepositsPage() {
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Tx Hash</p>
-                          <p className="text-sm text-indigo-400 font-mono truncate select-all">{deposit.txHash}</p>
+                          <p className="text-sm text-indigo-400 font-mono break-all select-all">{deposit.txHash}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Date</p>

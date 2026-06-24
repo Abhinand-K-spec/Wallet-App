@@ -320,7 +320,7 @@ export default function HistoryPage() {
                     <tbody className="divide-y divide-gray-800">
                       {deposits.map((d) => (
                         <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
-                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs truncate max-w-[200px] select-all">{d.txHash}</td>
+                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{d.txHash}</td>
                           <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
                           <td className="px-6 py-4 text-gray-300">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
                           <td className="px-6 py-4">
@@ -415,7 +415,7 @@ export default function HistoryPage() {
                           <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
                           <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(2)}</td>
                           <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
-                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs select-all">{w.utr || '—'}</td>
+                          <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{w.utr || '—'}</td>
                           <td className="px-6 py-4">
                             <div className="flex flex-col gap-1">
                               <span className={statusBadge(w.status)}>
@@ -428,7 +428,7 @@ export default function HistoryPage() {
                                 </span>
                               )}
                               {(w.status === 'PAID' || w.status === 'COMPLETED') && w.utr && (
-                                <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
+                                <span className="text-[10px] text-indigo-400 font-mono block break-all leading-tight mt-0.5 select-all">
                                   TxID/UTR: {w.utr}
                                 </span>
                               )}
@@ -475,9 +475,9 @@ export default function HistoryPage() {
                           <span className="font-medium text-white">{w.accountHolder}</span>
                         </div>
                         {w.utr && (
-                          <div className="flex justify-between font-mono text-[10px] text-indigo-400 select-all pt-1 border-t border-gray-800/40">
-                            <span>UTR:</span>
-                            <span>{w.utr}</span>
+                          <div className="flex flex-col font-mono text-[10px] text-indigo-400 select-all pt-1 border-t border-gray-800/40">
+                            <span className="text-[9px] text-gray-500">UTR / TxID:</span>
+                            <span className="break-all mt-0.5">{w.utr}</span>
                           </div>
                         )}
                       </div>

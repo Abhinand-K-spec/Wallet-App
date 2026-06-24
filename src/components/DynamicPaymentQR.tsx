@@ -185,7 +185,7 @@ export const DynamicPaymentQR: React.FC<DynamicPaymentQRProps> = ({
         <div className="w-full max-w-md bg-gray-950 rounded-xl p-3.5 flex items-center justify-between border border-gray-800/80 mb-4 hover:border-gray-700 transition-all">
           <div className="min-w-0 flex-1 pr-2">
             <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-semibold">Deposit Wallet Address</span>
-            <code className="text-xs text-indigo-400 font-mono block truncate mt-0.5">{walletAddress}</code>
+            <code className="text-xs text-indigo-400 font-mono block break-all mt-0.5">{walletAddress}</code>
           </div>
           <button
             onClick={copyToClipboard}

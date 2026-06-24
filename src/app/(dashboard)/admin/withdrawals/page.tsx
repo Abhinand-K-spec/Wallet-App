@@ -495,7 +495,7 @@ export default function AdminWithdrawalsPage() {
                               <span className="text-indigo-400 font-semibold block text-[10px] mb-0.5">USDT Wallet Transfer</span>
                               <span className="font-medium text-gray-300">{w.accountHolder}</span>
                               <div className="flex items-center gap-1 font-mono text-xs break-all select-all">
-                                <span className="truncate max-w-[120px]" title={w.walletAddress || ''}>{w.walletAddress}</span>
+                                <span title={w.walletAddress || ''}>{w.walletAddress}</span>
                                 <CopyButton text={w.walletAddress || ''} />
                               </div>
                             </>
@@ -510,7 +510,7 @@ export default function AdminWithdrawalsPage() {
                             </>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-indigo-400 font-mono text-xs">{w.utr || '—'}</td>
+                        <td className="px-6 py-4 text-indigo-400 font-mono text-xs break-all select-all">{w.utr || '—'}</td>
                         <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
                         <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
                         <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.updatedAt).toLocaleString()}</td>
@@ -547,10 +547,10 @@ export default function AdminWithdrawalsPage() {
                               <span>Recipient:</span>
                               <span className="text-white font-medium">{w.accountHolder}</span>
                             </div>
-                            <div className="flex justify-between items-center text-[11px] text-gray-400 mt-1 pt-1 border-t border-gray-900">
+                            <div className="flex flex-col text-[11px] text-gray-400 mt-1 pt-1 border-t border-gray-900">
                               <span>Wallet:</span>
-                              <div className="flex items-center gap-1 font-mono text-indigo-400 break-all select-all">
-                                <span className="truncate max-w-[100px]" title={w.walletAddress || ''}>{w.walletAddress}</span>
+                              <div className="flex items-center gap-1 font-mono text-indigo-400 break-all select-all mt-0.5">
+                                <span title={w.walletAddress || ''}>{w.walletAddress}</span>
                                 <CopyButton text={w.walletAddress || ''} />
                               </div>
                             </div>
@@ -573,9 +573,9 @@ export default function AdminWithdrawalsPage() {
                         )}
                       </div>
                       {w.utr && (
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-900 text-[11px] text-gray-400">
+                        <div className="flex flex-col pt-2 border-t border-gray-900 text-[11px] text-gray-400">
                           <span>UTR / TxID:</span>
-                          <span className="font-mono text-indigo-400 select-all">{w.utr}</span>
+                          <span className="font-mono text-indigo-400 break-all select-all mt-0.5">{w.utr}</span>
                         </div>
                       )}
                     </div>

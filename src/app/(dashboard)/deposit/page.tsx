@@ -208,7 +208,7 @@ export default function DepositPage() {
                   Admin USDT Wallet Address
                 </label>
                 <div className="w-full bg-gray-950/80 rounded-2xl p-3.5 flex items-center justify-between border border-gray-850 hover:border-indigo-500/30 transition-all duration-300 group">
-                  <code className="text-xs text-indigo-400 font-mono block truncate pr-3 select-all">
+                  <code className="text-xs text-indigo-400 font-mono block break-all pr-3 select-all">
                     {walletAddress}
                   </code>
                   <button
