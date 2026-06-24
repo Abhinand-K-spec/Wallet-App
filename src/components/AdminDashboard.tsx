@@ -292,15 +292,15 @@ const AdminDashboard = () => {
                     <tbody className="divide-y divide-gray-800/50 text-sm">
                       {currentTxs.map((tx) => (
                         <tr key={tx.hash} className="hover:bg-gray-800/20 transition-colors group">
-                          <td className="py-3 pl-2 font-mono text-xs text-indigo-400 group-hover:text-indigo-300">
+                          <td className="py-3 pl-2 font-mono text-xs text-indigo-400 group-hover:text-indigo-300 break-all max-w-[220px] select-all">
                             <a
                               href={`https://tronscan.org/#/transaction/${tx.hash}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 cursor-pointer"
+                              className="flex items-center gap-1.5 cursor-pointer break-all"
                             >
-                              {tx.hash.substring(0, 10)}...
-                              <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              {tx.hash}
+                              <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                             </a>
                           </td>
                           <td className="py-3 font-mono text-xs text-gray-400 max-w-[120px] truncate" title={tx.from}>
