@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 import type { RootState } from '../store/store';
@@ -57,9 +58,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             const isActive = pathname === item.path;
             const Icon = item.icon;
             return (
-              <button
+              <Link
                 key={item.name}
-                onClick={() => router.push(item.path)}
+                href={item.path}
                 className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
                   isActive 
                     ? 'bg-indigo-600/10 text-indigo-400 shadow-inner border-l-2 border-indigo-500' 
@@ -68,7 +69,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               >
                 <Icon className={`w-5 h-5 mr-3 transition-colors duration-300 ${isActive ? 'text-indigo-400' : 'text-gray-500'}`} />
                 {item.name}
-              </button>
+              </Link>
             )
           })}
         </div>
@@ -119,12 +120,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 const isActive = pathname === item.path;
                 const Icon = item.icon;
                 return (
-                  <button
+                  <Link
                     key={item.name}
-                    onClick={() => {
-                      router.push(item.path);
-                      setIsMobileMenuOpen(false);
-                    }}
+                    href={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 cursor-pointer ${
                       isActive 
                         ? 'bg-indigo-600/10 text-indigo-400 border-l-2 border-indigo-500' 
@@ -133,7 +132,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   >
                     <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-indigo-400' : 'text-gray-500'}`} />
                     {item.name}
-                  </button>
+                  </Link>
                 )
               })}
             </div>

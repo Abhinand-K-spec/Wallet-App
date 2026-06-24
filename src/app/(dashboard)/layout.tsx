@@ -1,28 +1,31 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
 import type { RootState } from '@/store/store';
 import Layout from '@/components/Layout';
-import UserDashboard from '@/components/UserDashboard';
-import AdminDashboard from '@/components/AdminDashboard';
+import { ExchangeRateProvider } from '@/context/ExchangeRateContext';
 
-export default function DashboardPage() {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.replace('/login');
+    if (mounted) {
+      if (!isAuthenticated) {
+        router.replace('/login');
+      } else if (user && pathname.startsWith('/admin') && user.role !== 'ADMIN') {
+        router.replace('/dashboard');
+      }
     }
-  }, [isAuthenticated, router, mounted]);
+  }, [isAuthenticated, user, router, mounted, pathname]);
 
   if (!mounted || !isAuthenticated || !user) {
     return (
@@ -33,8 +36,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <Layout>
-      {user.role === 'ADMIN' ? <AdminDashboard /> : <UserDashboard />}
-    </Layout>
+    <ExchangeRateProvider>
+      <Layout>{children}</Layout>
+    </ExchangeRateProvider>
   );
 }

@@ -118,3 +118,8 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Enable Supabase Realtime for system_settings table
+alter publication supabase_realtime add table public.system_settings;
+alter table public.system_settings replica identity full;
+

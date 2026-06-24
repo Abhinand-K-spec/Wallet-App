@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
-import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
 import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, CreditCard, Loader2, Copy, Check, Download } from 'lucide-react';
 
 interface Withdrawal {
@@ -46,25 +43,6 @@ export default function AdminWithdrawalsPage() {
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   
   const dispatch = useDispatch();
-  const router = useRouter();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth & Admin Protection
-  useEffect(() => {
-    if (mounted) {
-      if (!isAuthenticated) {
-        router.replace('/login');
-      } else if (user?.role !== 'ADMIN') {
-        router.replace('/dashboard');
-      }
-    }
-  }, [isAuthenticated, user, router, mounted]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => ({
@@ -173,8 +151,6 @@ export default function AdminWithdrawalsPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'ADMIN') return;
-
     let active = true;
     const fetchWithdrawals = async () => {
       try {
@@ -194,7 +170,7 @@ export default function AdminWithdrawalsPage() {
     return () => {
       active = false;
     };
-  }, [refreshKey, isAuthenticated, user]);
+  }, [refreshKey]);
 
   const handleAction = async (withdrawalId: string, action: 'APPROVED' | 'REJECTED' | 'PAID') => {
     if (action === 'PAID' && !utrInputs[withdrawalId]) {
@@ -219,19 +195,9 @@ export default function AdminWithdrawalsPage() {
     }
   };
 
-  if (!mounted || !isAuthenticated || user?.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
-      <Layout>
-        <div className="text-gray-400 p-8 font-sans">Loading withdrawals...</div>
-      </Layout>
+      <div className="text-gray-400 p-8 font-sans">Loading withdrawals...</div>
     );
   }
 
@@ -240,8 +206,7 @@ export default function AdminWithdrawalsPage() {
   const completedWithdrawals = withdrawals.filter(w => ['PAID', 'REJECTED'].includes(w.status));
 
   return (
-    <Layout>
-      <div className="space-y-8 font-sans">
+    <div className="space-y-8 font-sans">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Manage Withdrawals</h1>
           <p className="text-gray-400 text-sm mt-1">Approve, reject, or mark withdrawal requests as paid</p>
@@ -655,6 +620,5 @@ export default function AdminWithdrawalsPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

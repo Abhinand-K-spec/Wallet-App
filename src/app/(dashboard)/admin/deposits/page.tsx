@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
-import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
 import { ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ShieldAlert, AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Deposit {
@@ -263,30 +261,8 @@ export default function AdminDepositsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const dispatch = useDispatch();
-  const router = useRouter();
-  
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth & Admin Protection
-  useEffect(() => {
-    if (mounted) {
-      if (!isAuthenticated) {
-        router.replace('/login');
-      } else if (user?.role !== 'ADMIN') {
-        router.replace('/dashboard');
-      }
-    }
-  }, [isAuthenticated, user, router, mounted]);
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'ADMIN') return;
-
     let active = true;
     const fetchDeposits = async () => {
       try {
@@ -306,7 +282,7 @@ export default function AdminDepositsPage() {
     return () => {
       active = false;
     };
-  }, [refreshKey, isAuthenticated, user]);
+  }, [refreshKey]);
 
   const handleAction = async (depositId: string, action: 'APPROVED' | 'REJECTED') => {
     setActionLoading(depositId);
@@ -342,22 +318,13 @@ export default function AdminDepositsPage() {
     }
   };
 
-  if (!mounted || !isAuthenticated || user?.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (loading) return <Layout><div className="text-gray-400 p-8 font-sans">Loading deposits...</div></Layout>;
+  if (loading) return <div className="text-gray-400 p-8 font-sans">Loading deposits...</div>;
 
   const pendingDeposits = deposits.filter(d => d.status === 'PENDING');
   const processedDeposits = deposits.filter(d => d.status !== 'PENDING');
 
   return (
-    <Layout>
-      <div className="space-y-8 font-sans">
+    <div className="space-y-8 font-sans">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Verify Deposits</h1>
           <p className="text-gray-400 text-sm mt-1">Review and approve user crypto deposit submissions</p>
@@ -499,6 +466,5 @@ export default function AdminDepositsPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

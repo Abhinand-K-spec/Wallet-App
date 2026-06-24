@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback, type FormEvent } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
-import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
+import { useExchangeRate } from '@/context/ExchangeRateContext';
 import { Building2, Landmark, CheckCircle2, Loader2, AlertCircle, RefreshCw, DollarSign, Wallet } from 'lucide-react';
 
 type MethodType = 'BANK' | 'USDT';
@@ -26,20 +25,6 @@ interface WithdrawalItem {
 export default function WithdrawPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth Protection
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, router, mounted]);
 
   const [method, setMethod] = useState<MethodType>('BANK');
   const [amountUSD, setAmountUSD] = useState('');
@@ -53,8 +38,7 @@ export default function WithdrawPage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  const [inrRate, setInrRate] = useState<number>(83.50);
-  const [rateLoading, setRateLoading] = useState<boolean>(true);
+  const { exchangeRate: inrRate, rateLoading } = useExchangeRate();
   const [balanceINR, setBalanceINR] = useState<number>(0);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
 
@@ -77,31 +61,8 @@ export default function WithdrawPage() {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    let active = true;
-    const fetchRate = async () => {
-      try {
-        const res = await api.get('/user/rate');
-        if (active && res.data && typeof res.data.rate === 'number') {
-          setInrRate(res.data.rate);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch custom USD/INR rate from backend:', err);
-      } finally {
-        if (active) {
-          setRateLoading(false);
-        }
-      }
-    };
-
-    fetchRate();
     fetchProfileAndBalance();
-
-    return () => {
-      active = false;
-    };
-  }, [fetchProfileAndBalance, isAuthenticated]);
+  }, [fetchProfileAndBalance]);
 
   const handleINRChange = (val: string) => {
     setAmountINR(val);
@@ -226,17 +187,8 @@ export default function WithdrawPage() {
     }
   };
 
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto space-y-6 font-sans px-4 py-6">
+    <div className="max-w-2xl mx-auto space-y-6 font-sans px-4 py-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500 bg-clip-text text-transparent">
             Withdraw Funds
@@ -463,6 +415,5 @@ export default function WithdrawPage() {
           </form>
         </div>
       </div>
-    </Layout>
   );
 }

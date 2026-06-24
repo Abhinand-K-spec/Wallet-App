@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
 import { Users, ArrowDownToLine, ArrowUpFromLine, Clock, Coins, Copy, Check, ExternalLink, AlertTriangle, Wallet, RefreshCw, Loader2 } from 'lucide-react';
+import { useExchangeRate } from '@/context/ExchangeRateContext';
 
 interface WalletDetails {
   address: string;
@@ -37,24 +38,22 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const [appRate, setAppRate] = useState<number | null>(null);
+  const { exchangeRate: appRate, refreshRate } = useExchangeRate();
   const [rateInput, setRateInput] = useState('');
   const [rateUpdating, setRateUpdating] = useState(false);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchRate = async () => {
-      try {
-        const res = await api.get('/user/rate');
-        setAppRate(res.data.rate);
-        setRateInput(String(res.data.rate));
-      } catch (err) {
-        console.error('Error fetching rate:', err);
-      }
-    };
-    fetchRate();
-  }, []);
+    if (appRate !== null) {
+      setRateInput((prev) => {
+        if (prev === '' || prev === String(appRate)) {
+          return String(appRate);
+        }
+        return prev;
+      });
+    }
+  }, [appRate]);
 
   const handleUpdateRate = async () => {
     if (!rateInput || isNaN(parseFloat(rateInput)) || parseFloat(rateInput) <= 0) {
@@ -65,7 +64,7 @@ const AdminDashboard = () => {
     try {
       const res = await api.post('/admin/settings/rate', { rate: rateInput });
       dispatch(addToast({ message: res.data.message || 'Exchange rate updated successfully.', type: 'success' }));
-      setAppRate(res.data.rate);
+      await refreshRate();
     } catch (err) {
       const error = err as { response?: { data?: { error?: string } } };
       const msg = error.response?.data?.error || 'Failed to update exchange rate.';

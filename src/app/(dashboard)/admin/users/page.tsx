@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
 import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
 import { Users, UserX, UserCheck, Shield, Search, Loader2 } from 'lucide-react';
 
 interface UserItem {
@@ -55,28 +54,9 @@ export default function AdminUsersPage() {
   const router = useRouter();
   
   // Currently logged in admin
-  const { isAuthenticated, user: currentAdmin } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth & Admin Protection
-  useEffect(() => {
-    if (mounted) {
-      if (!isAuthenticated) {
-        router.replace('/login');
-      } else if (currentAdmin?.role !== 'ADMIN') {
-        router.replace('/dashboard');
-      }
-    }
-  }, [isAuthenticated, currentAdmin, router, mounted]);
+  const { user: currentAdmin } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if (!isAuthenticated || currentAdmin?.role !== 'ADMIN') return;
-
     let active = true;
     const fetchUsers = async () => {
       setLoading(true);
@@ -114,7 +94,7 @@ export default function AdminUsersPage() {
       active = false;
       clearTimeout(timer);
     };
-  }, [page, search, statusFilter, roleFilter, refreshKey, dispatch, isAuthenticated, currentAdmin]);
+  }, [page, search, statusFilter, roleFilter, refreshKey, dispatch]);
 
   const handleToggleStatus = async (userId: string) => {
     if (userId === currentAdmin?.id) {
@@ -143,28 +123,17 @@ export default function AdminUsersPage() {
     setPage(1);
   };
 
-  if (!mounted || !isAuthenticated || currentAdmin?.role !== 'ADMIN') {
+  if (loading && refreshKey === 0) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
+      <div className="flex flex-col items-center justify-center py-20 gap-3 font-sans">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <p className="text-sm text-gray-500">Loading user accounts...</p>
       </div>
     );
   }
 
-  if (loading && refreshKey === 0) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center py-20 gap-3 font-sans">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <p className="text-sm text-gray-500">Loading user accounts...</p>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
-    <Layout>
-      <div className="space-y-8 font-sans">
+    <div className="space-y-8 font-sans">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Users className="w-7 h-7 text-indigo-400" />
@@ -457,6 +426,5 @@ export default function AdminUsersPage() {
           )}
         </div>
       </div>
-    </Layout>
   );
 }

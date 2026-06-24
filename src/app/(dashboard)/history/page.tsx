@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
-import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
 import { ArrowDownToLine, ArrowUpFromLine, Activity, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
 interface Deposit {
@@ -65,29 +61,12 @@ const statusBadge = (status: string) => {
 type TabType = 'all' | 'deposits' | 'withdrawals';
 
 export default function HistoryPage() {
-  const router = useRouter();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth Protection
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, router, mounted]);
-
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     const fetchData = async () => {
       try {
         const res = await api.get('/user/transactions');
@@ -100,17 +79,9 @@ export default function HistoryPage() {
       }
     };
     fetchData();
-  }, [isAuthenticated]);
+  }, []);
 
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (loading) return <Layout><div className="text-gray-400 p-8 font-sans">Loading history...</div></Layout>;
+  if (loading) return <div className="text-gray-400 p-8 font-sans">Loading history...</div>;
 
   const combinedTransactions = [
     ...deposits.map((d) => ({
@@ -144,8 +115,7 @@ export default function HistoryPage() {
   ];
 
   return (
-    <Layout>
-      <div className="space-y-6 font-sans">
+    <div className="space-y-6 font-sans">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Transaction History</h1>
           <p className="text-gray-400 text-sm mt-1 font-sans">View all your deposits, withdrawals, and transactions</p>
@@ -536,6 +506,5 @@ export default function HistoryPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

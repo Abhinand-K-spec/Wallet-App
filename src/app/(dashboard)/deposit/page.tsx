@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, type FormEvent } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
-import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import Layout from '@/components/Layout';
 import { QrCode, Copy, CheckCircle2, Loader2, AlertCircle, ExternalLink, Coins, KeyRound, ArrowRight, RefreshCw } from 'lucide-react';
+import { useExchangeRate } from '@/context/ExchangeRateContext';
 
 interface RateResponse {
   rate: number;
@@ -20,20 +19,6 @@ interface DepositAddressResponse {
 export default function DepositPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
-  // Hydration safety
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Auth Protection
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, router, mounted]);
 
   // Form states
   const [amountUSD, setAmountUSD] = useState('');
@@ -44,13 +29,11 @@ export default function DepositPage() {
 
   // Info states
   const [walletAddress, setWalletAddress] = useState('Loading address...');
-  const [exchangeRate, setExchangeRate] = useState<number>(83.50);
-  const [isRateFetching, setIsRateFetching] = useState(false);
+  const { exchangeRate, rateLoading: isRateFetching } = useExchangeRate();
   const [copied, setCopied] = useState(false);
 
   // Fetch Wallet Address
   useEffect(() => {
-    if (!isAuthenticated) return;
     const fetchAddress = async () => {
       try {
         const res = await api.get<DepositAddressResponse>('/user/deposit-address');
@@ -62,27 +45,7 @@ export default function DepositPage() {
       }
     };
     fetchAddress();
-  }, [dispatch, isAuthenticated]);
-
-  // Fetch Exchange Rate via simple polling
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const fetchRate = async () => {
-      setIsRateFetching(true);
-      try {
-        const res = await api.get<RateResponse>('/user/rate');
-        setExchangeRate(res.data.rate);
-      } catch (err) {
-        console.error('Failed to fetch rate:', err);
-      } finally {
-        setIsRateFetching(false);
-      }
-    };
-
-    fetchRate();
-    const timer = setInterval(fetchRate, 60000);
-    return () => clearInterval(timer);
-  }, [isAuthenticated]);
+  }, [dispatch]);
 
   // Handle address copy
   const copyToClipboard = () => {
@@ -153,25 +116,16 @@ export default function DepositPage() {
   const amountNum = parseFloat(amountUSD);
   const equivalentINR = !isNaN(amountNum) ? (amountNum * exchangeRate).toFixed(2) : '0.00';
 
-  if (!mounted || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-500/10 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
-    <Layout>
-      <div className="max-w-4xl mx-auto space-y-8 px-4 py-6 font-sans">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500 bg-clip-text text-transparent">
-            Deposit Funds
-          </h1>
-          <p className="text-gray-400 mt-2 text-sm max-w-xl mx-auto">
-            Send USDT (TRC20) to the admin wallet address, then submit the details below for on-chain verification.
-          </p>
-        </div>
+    <div className="max-w-4xl mx-auto space-y-8 px-4 py-6 font-sans">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-500 bg-clip-text text-transparent">
+          Deposit Funds
+        </h1>
+        <p className="text-gray-400 mt-2 text-sm max-w-xl mx-auto">
+          Send USDT (TRC20) to the admin wallet address, then submit the details below for on-chain verification.
+        </p>
+      </div>
 
         {successMsg ? (
           /* Success Screen */
@@ -403,6 +357,5 @@ export default function DepositPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }
