@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message: 'Email verified successfully',
-      token: 'session_active',
+      token: authData.session?.access_token || 'session_active',
       user: {
         id: profile.id,
         userId: profile.user_id,
