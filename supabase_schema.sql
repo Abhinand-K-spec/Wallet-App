@@ -105,14 +105,9 @@ BEGIN
   SELECT COALESCE(count(*), 0) INTO profile_count FROM public.profiles;
   custom_user_id := 'USR-' || (1000 + profile_count);
 
-  -- Admin auto-role override for convenience
-  IF new.email = 'admin@wallet.com' THEN
-    INSERT INTO public.profiles (id, user_id, email, role, status)
-    VALUES (new.id, 'USR-ADMIN', new.email, 'ADMIN', 'ACTIVE');
-  ELSE
-    INSERT INTO public.profiles (id, user_id, email, role, status)
-    VALUES (new.id, custom_user_id, new.email, 'USER', 'ACTIVE');
-  END IF;
+  -- All new users strictly get the 'USER' role. Admins are appointed manually by database query.
+  INSERT INTO public.profiles (id, user_id, email, role, status)
+  VALUES (new.id, custom_user_id, new.email, 'USER', 'ACTIVE');
   
   RETURN new;
 END;

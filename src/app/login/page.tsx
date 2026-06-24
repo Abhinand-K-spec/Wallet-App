@@ -90,7 +90,7 @@ const LoginPage = () => {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full bg-gray-950 border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all pl-11"
-                placeholder={isRegistering ? 'user@wallet.com' : 'admin@wallet.com'}
+                placeholder="email@example.com"
                 required
               />
               <Wallet className="w-5 h-5 text-gray-500 absolute left-4 top-3.5" />
@@ -134,13 +134,7 @@ const LoginPage = () => {
           </button>
         </div>
 
-        {!isRegistering && (
-          <div className="mt-6 text-center text-sm text-gray-500 border-t border-gray-800/60 pt-4">
-            Demo Accounts:<br/>
-            <span className="text-gray-400">admin@wallet.com / password123</span><br/>
-            <span className="text-gray-400">user@wallet.com / password123</span>
-          </div>
-        )}
+
       </div>
     </div>
   );
