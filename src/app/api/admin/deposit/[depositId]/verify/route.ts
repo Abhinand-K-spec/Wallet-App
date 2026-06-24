@@ -51,15 +51,23 @@ export async function POST(
       return NextResponse.json({ error: 'Deposit already processed' }, { status: 400 });
     }
 
-    const rateFloat = adminEnteredRate ? parseFloat(adminEnteredRate) : null;
-    const equivalentINR = (action === 'APPROVED' && rateFloat) ? deposit.amount_usd * rateFloat : null;
+    // Fetch active global rate from system_settings
+    const { data: rateSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'USD_INR_RATE')
+      .maybeSingle();
+
+    const globalRate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
+    const rateFloat = deposit.admin_entered_rate || globalRate;
+    const equivalentINR = (action === 'APPROVED') ? deposit.amount_usd * rateFloat : null;
 
     // Update deposit status
     const { data: updatedDeposit, error: updateErr } = await supabase
       .from('wallet_deposits')
       .update({
         status: action,
-        admin_entered_rate: (action === 'APPROVED' && rateFloat) ? rateFloat : null,
+        admin_entered_rate: (action === 'APPROVED') ? rateFloat : null,
         equivalent_inr: equivalentINR,
         updated_at: new Date().toISOString()
       })

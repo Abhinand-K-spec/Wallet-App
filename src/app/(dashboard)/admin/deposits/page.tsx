@@ -287,25 +287,8 @@ export default function AdminDepositsPage() {
   const handleAction = async (depositId: string, action: 'APPROVED' | 'REJECTED') => {
     setActionLoading(depositId);
     try {
-      // Prompt user for exchange rate if approving
-      let adminEnteredRate = '';
-      if (action === 'APPROVED') {
-        const rate = prompt('Please enter the USD to INR conversion rate for this deposit:', '83.50');
-        if (rate === null) {
-          setActionLoading(null);
-          return; // user cancelled
-        }
-        if (isNaN(parseFloat(rate)) || parseFloat(rate) <= 0) {
-          dispatch(addToast({ message: 'Invalid exchange rate.', type: 'error' }));
-          setActionLoading(null);
-          return;
-        }
-        adminEnteredRate = rate;
-      }
-
       await api.post(`/admin/deposit/${depositId}/verify`, {
         action,
-        adminEnteredRate,
       });
       dispatch(addToast({ message: `Deposit ${action === 'APPROVED' ? 'approved' : 'rejected'} successfully!`, type: 'success' }));
       setRefreshKey(prev => prev + 1);
