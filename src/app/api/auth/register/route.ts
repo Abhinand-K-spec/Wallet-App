@@ -44,6 +44,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to initialize user profile' }, { status: 500 });
     }
 
+    // Check if email confirmation is required/completed
+    const isEmailConfirmed = authData.user.email_confirmed_at !== null;
+
+    if (!isEmailConfirmed) {
+      return NextResponse.json({
+        message: 'Verification OTP sent to your email. Please verify to complete signup.',
+        requiresVerification: true,
+        email,
+      }, { status: 200 });
+    }
+
     return NextResponse.json({
       message: 'User created successfully',
       token: 'session_active',
