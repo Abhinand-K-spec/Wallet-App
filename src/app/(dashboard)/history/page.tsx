@@ -168,8 +168,8 @@ export default function HistoryPage() {
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
                               }`}>
                               {tx.transactionType === 'DEPOSIT'
-                                ? <ArrowUpFromLine className="w-3 h-3" />
-                                : <ArrowDownToLine className="w-3 h-3" />}
+                                ? <ArrowDownToLine className="w-3 h-3" />
+                                : <ArrowUpFromLine className="w-3 h-3" />}
                               {tx.transactionType}
                             </span>
                             {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -229,8 +229,8 @@ export default function HistoryPage() {
                       <div className="flex flex-col gap-1">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
                           {tx.transactionType === 'DEPOSIT'
-                            ? <ArrowUpFromLine className="w-3 h-3" />
-                            : <ArrowDownToLine className="w-3 h-3" />}
+                            ? <ArrowDownToLine className="w-3 h-3" />
+                            : <ArrowUpFromLine className="w-3 h-3" />}
                           {tx.transactionType}
                         </span>
                         {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -299,7 +299,7 @@ export default function HistoryPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
           {deposits.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              <ArrowUpFromLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
+              <ArrowDownToLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
               <p className="text-lg font-medium">No deposits yet</p>
               <p className="text-sm mt-1">Submit a crypto deposit to get started</p>
             </div>
@@ -380,7 +380,7 @@ export default function HistoryPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
           {withdrawals.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              <ArrowDownToLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
+              <ArrowUpFromLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
               <p className="text-lg font-medium">No withdrawals yet</p>
               <p className="text-sm mt-1">Request a withdrawal to see it here</p>
             </div>

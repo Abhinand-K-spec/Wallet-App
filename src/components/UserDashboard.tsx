@@ -176,7 +176,7 @@ const UserDashboard = () => {
           {/* Total Deposits Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
             <div className="p-3 bg-red-500/10 rounded-xl text-red-400 shrink-0">
-              <ArrowUpFromLine className="w-5 h-5" />
+              <ArrowDownToLine className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-gray-500 font-semibold uppercase">Total Deposits</p>
@@ -188,7 +188,7 @@ const UserDashboard = () => {
           {/* Total Withdrawals Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
             <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-              <ArrowDownToLine className="w-5 h-5" />
+              <ArrowUpFromLine className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-gray-500 font-semibold uppercase">Total Withdrawals</p>
@@ -233,7 +233,7 @@ const UserDashboard = () => {
                               ? 'bg-red-500/10 text-red-400 border-red-500/10' 
                               : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
                           }`}>
-                            {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3.5 h-3.5" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
+                            {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
                             {tx.transactionType}
                           </span>
                         </td>
@@ -265,7 +265,7 @@ const UserDashboard = () => {
                           ? 'bg-red-500/10 text-red-400 border-red-500/10' 
                           : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
                       }`}>
-                        {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3 h-3" /> : <ArrowDownToLine className="w-3 h-3" />}
+                        {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3 h-3" /> : <ArrowUpFromLine className="w-3 h-3" />}
                         {tx.transactionType}
                       </span>
                       <span className={statusBadge(tx.status)}>
