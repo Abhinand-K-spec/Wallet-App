@@ -65,6 +65,12 @@ export default function HistoryPage() {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +113,14 @@ export default function HistoryPage() {
       utr: w.utr,
     })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const paginatedTransactions = combinedTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedDeposits = deposits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedWithdrawals = withdrawals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const totalPagesAll = Math.ceil(combinedTransactions.length / itemsPerPage);
+  const totalPagesDeposits = Math.ceil(deposits.length / itemsPerPage);
+  const totalPagesWithdrawals = Math.ceil(withdrawals.length / itemsPerPage);
 
   const tabs: { key: TabType; label: string; count: number }[] = [
     { key: 'all', label: 'All Transactions', count: combinedTransactions.length },
@@ -161,7 +175,7 @@ export default function HistoryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {combinedTransactions.map((tx) => (
+                    {paginatedTransactions.map((tx) => (
                       <tr key={tx.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
@@ -169,7 +183,7 @@ export default function HistoryPage() {
                               }`}>
                               {tx.transactionType === 'DEPOSIT'
                                 ? <ArrowDownToLine className="w-3 h-3" />
-                                : <ArrowUpFromLine className="w-3 h-3" />}
+                                : <ArrowUpFromLine className="w-3 h-3 text-emerald-400" />}
                               {tx.transactionType}
                             </span>
                             {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -223,14 +237,14 @@ export default function HistoryPage() {
 
               {/* Mobile list view */}
               <div className="md:hidden divide-y divide-gray-800">
-                {combinedTransactions.map((tx) => (
+                {paginatedTransactions.map((tx) => (
                   <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-1">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
                           {tx.transactionType === 'DEPOSIT'
                             ? <ArrowDownToLine className="w-3 h-3" />
-                            : <ArrowUpFromLine className="w-3 h-3" />}
+                            : <ArrowUpFromLine className="w-3 h-3 text-emerald-400" />}
                           {tx.transactionType}
                         </span>
                         {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -289,6 +303,31 @@ export default function HistoryPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPagesAll > 1 && (
+                <div className="flex items-center justify-between p-6 border-t border-gray-800 bg-gray-900/35">
+                  <p className="text-xs text-gray-500">
+                    Showing page {currentPage} of {totalPagesAll} ({combinedTransactions.length} transactions total)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPagesAll))}
+                      disabled={currentPage === totalPagesAll}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -318,7 +357,7 @@ export default function HistoryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {deposits.map((d) => (
+                    {paginatedDeposits.map((d) => (
                       <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{d.txHash}</td>
                         <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(4)}</td>
@@ -338,7 +377,7 @@ export default function HistoryPage() {
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-800">
-                {deposits.map((d) => (
+                {paginatedDeposits.map((d) => (
                   <div key={d.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border bg-green-500/10 text-green-400 border-green-500/10">
@@ -360,7 +399,7 @@ export default function HistoryPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-850 font-mono text-indigo-400 break-all select-all">
+                    <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-855 font-mono text-indigo-400 break-all select-all">
                       TxID: {d.txHash}
                     </div>
                     <div className="text-[10px] text-gray-500 flex justify-between pt-2 border-t border-gray-800/30">
@@ -370,6 +409,31 @@ export default function HistoryPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPagesDeposits > 1 && (
+                <div className="flex items-center justify-between p-6 border-t border-gray-800 bg-gray-900/35">
+                  <p className="text-xs text-gray-500">
+                    Showing page {currentPage} of {totalPagesDeposits} ({deposits.length} deposits total)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPagesDeposits))}
+                      disabled={currentPage === totalPagesDeposits}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -402,7 +466,7 @@ export default function HistoryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {withdrawals.map((w) => (
+                    {paginatedWithdrawals.map((w) => (
                       <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border ${w.method === 'USDT'
@@ -446,7 +510,7 @@ export default function HistoryPage() {
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-800">
-                {withdrawals.map((w) => (
+                {paginatedWithdrawals.map((w) => (
                   <div key={w.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${w.method === 'USDT'
@@ -501,6 +565,31 @@ export default function HistoryPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPagesWithdrawals > 1 && (
+                <div className="flex items-center justify-between p-6 border-t border-gray-800 bg-gray-900/35">
+                  <p className="text-xs text-gray-500">
+                    Showing page {currentPage} of {totalPagesWithdrawals} ({withdrawals.length} withdrawals total)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPagesWithdrawals))}
+                      disabled={currentPage === totalPagesWithdrawals}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
