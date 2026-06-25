@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: authErr?.message || 'Failed to create user' }, { status: 400 });
     }
 
+
     // Wait a brief moment or query profiles to ensure the trigger completed
     let profile = null;
     let retries = 5;
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     // Check if email confirmation is required/completed
-    const isEmailConfirmed = authData.user.email_confirmed_at !== null;
+    const isEmailConfirmed = !!authData.user.email_confirmed_at;
 
     if (!isEmailConfirmed) {
       return NextResponse.json({
