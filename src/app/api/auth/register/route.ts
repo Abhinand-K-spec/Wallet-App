@@ -23,6 +23,17 @@ export async function POST(request: Request) {
     }
 
 
+    // Check if email confirmation is required/completed
+    const isEmailConfirmed = !!authData.user.email_confirmed_at;
+
+    if (!isEmailConfirmed) {
+      return NextResponse.json({
+        message: 'Verification OTP sent to your email. Please verify to complete signup.',
+        requiresVerification: true,
+        email,
+      }, { status: 200 });
+    }
+
     // Wait a brief moment or query profiles to ensure the trigger completed
     let profile = null;
     let retries = 5;
@@ -43,17 +54,6 @@ export async function POST(request: Request) {
 
     if (!profile) {
       return NextResponse.json({ error: 'Failed to initialize user profile' }, { status: 500 });
-    }
-
-    // Check if email confirmation is required/completed
-    const isEmailConfirmed = !!authData.user.email_confirmed_at;
-
-    if (!isEmailConfirmed) {
-      return NextResponse.json({
-        message: 'Verification OTP sent to your email. Please verify to complete signup.',
-        requiresVerification: true,
-        email,
-      }, { status: 200 });
     }
 
     return NextResponse.json({
