@@ -15,6 +15,9 @@ interface UserItem {
   role: 'USER' | 'ADMIN';
   status: 'ACTIVE' | 'SUSPENDED';
   createdAt: string;
+  balanceUSD: number;
+  balanceINR: number;
+  depositRates: number[];
 }
 
 const statusBadge = (status: string) => {
@@ -260,6 +263,8 @@ export default function AdminUsersPage() {
                       <th className="py-4 px-6">User ID</th>
                       <th className="py-4 px-6">Email</th>
                       <th className="py-4 px-6">Role</th>
+                      <th className="py-4 px-6">Balance</th>
+                      <th className="py-4 px-6">Deposit Rates</th>
                       <th className="py-4 px-6">Status</th>
                       <th className="py-4 px-6">Registered Date</th>
                       <th className="py-4 px-6 text-right">Actions</th>
@@ -279,6 +284,19 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="py-4 px-6">
                             <span className={roleBadge(u.role)}>{u.role}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div className="font-semibold text-gray-200 font-mono">
+                              ₹{u.balanceINR?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}
+                            </div>
+                            <div className="text-[10px] text-gray-500 font-mono mt-0.5">
+                              ${u.balanceUSD?.toFixed(4) || '0.0000'} USDT
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-xs text-gray-400 font-mono max-w-[150px] truncate">
+                            {u.depositRates && u.depositRates.length > 0 
+                              ? u.depositRates.map(r => `₹${r.toFixed(2)}`).join(', ') 
+                              : '—'}
                           </td>
                           <td className="py-4 px-6">
                             <span className={statusBadge(u.status)}>{u.status}</span>
@@ -343,6 +361,26 @@ export default function AdminUsersPage() {
                         </div>
                       </div>
                       
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] text-gray-500">Balance</p>
+                          <p className="font-bold text-white text-xs font-mono mt-0.5">
+                            ₹{u.balanceINR?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '0.00'}
+                          </p>
+                          <p className="text-[9px] text-gray-500 font-mono mt-0.5">
+                            ${u.balanceUSD?.toFixed(4) || '0.0000'} USDT
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-gray-500">Deposit Rates</p>
+                          <p className="text-xs text-gray-300 font-mono mt-0.5 break-words">
+                            {u.depositRates && u.depositRates.length > 0 
+                              ? u.depositRates.map(r => `₹${r.toFixed(2)}`).join(', ') 
+                              : '—'}
+                          </p>
+                        </div>
+                      </div>
+
                       <div className="space-y-1">
                         <p className="text-[10px] text-gray-500">Email Address</p>
                         <p className="font-medium text-gray-200 break-all text-xs">

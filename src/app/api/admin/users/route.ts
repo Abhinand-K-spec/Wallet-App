@@ -61,16 +61,60 @@ export async function GET(request: NextRequest) {
 
     const totalCount = count || 0;
 
+    // Fetch deposits and withdrawals for these users
+    const userIds = (users || []).map((u: any) => u.id);
+    let depositsData: any[] = [];
+    let withdrawalsData: any[] = [];
+
+    if (userIds.length > 0) {
+      const { data: dep } = await supabase
+        .from('wallet_deposits')
+        .select('user_id, amount_usd, equivalent_inr, admin_entered_rate, status')
+        .in('user_id', userIds);
+      if (dep) depositsData = dep;
+
+      const { data: wd } = await supabase
+        .from('withdrawals')
+        .select('user_id, amount_usd, amount_inr, status')
+        .in('user_id', userIds);
+      if (wd) withdrawalsData = wd;
+    }
+
     // Convert keys to camelCase to match expectations
-    const mappedUsers = (users || []).map((u: any) => ({
-      id: u.id,
-      userId: u.user_id,
-      email: u.email,
-      role: u.role,
-      status: u.status,
-      createdAt: u.created_at,
-      updatedAt: u.updated_at,
-    }));
+    const mappedUsers = (users || []).map((u: any) => {
+      const userDeposits = depositsData.filter((d: any) => d.user_id === u.id);
+      const userWithdrawals = withdrawalsData.filter((w: any) => w.user_id === u.id);
+
+      const approvedDeposits = userDeposits.filter((d: any) => ['APPROVED', 'SUCCESS'].includes(d.status));
+      const approvedWithdrawals = userWithdrawals.filter((w: any) => ['APPROVED', 'PAID'].includes(w.status));
+
+      const totalDepositsUSD = approvedDeposits.reduce((sum: number, d: any) => sum + (d.amount_usd || 0), 0);
+      const totalWithdrawalsUSD = approvedWithdrawals.reduce((sum: number, w: any) => sum + (w.amount_usd || 0), 0);
+      const balanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
+
+      const totalDepositsINR = approvedDeposits.reduce((sum: number, d: any) => sum + (d.equivalent_inr || (d.amount_usd * (d.admin_entered_rate || 83.5))), 0);
+      const totalWithdrawalsINR = approvedWithdrawals.reduce((sum: number, w: any) => sum + (w.amount_inr || 0), 0);
+      const balanceINR = totalDepositsINR - totalWithdrawalsINR;
+
+      const depositRates = Array.from(new Set(
+        approvedDeposits
+          .map((d: any) => d.admin_entered_rate)
+          .filter((rate: any) => rate !== null && rate !== undefined)
+      )) as number[];
+
+      return {
+        id: u.id,
+        userId: u.user_id,
+        email: u.email,
+        role: u.role,
+        status: u.status,
+        createdAt: u.created_at,
+        updatedAt: u.updated_at,
+        balanceUSD,
+        balanceINR,
+        depositRates,
+      };
+    });
 
     return NextResponse.json({
       users: mappedUsers,
