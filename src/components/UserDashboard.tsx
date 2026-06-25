@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/api/axios';
 import { ArrowDownToLine, ArrowUpFromLine, Activity, Wallet, Plus, ArrowUpRight, History } from 'lucide-react';
+import { useExchangeRate } from '@/context/ExchangeRateContext';
 
 interface Deposit {
   id: string;
@@ -18,6 +19,7 @@ interface Withdrawal {
   status: string;
   amountUSD: number;
   amountINR: number;
+  method: 'BANK' | 'USDT';
 }
 
 interface Transaction {
@@ -53,6 +55,7 @@ const UserDashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { exchangeRate: inrRate } = useExchangeRate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -77,13 +80,16 @@ const UserDashboard = () => {
     );
   }
 
-  const totalDepositsINR = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + (d.equivalentINR ?? (d.amountUSD * (d.adminEnteredRate ?? 83.50))), 0) || 0;
-  const totalWithdrawalsINR = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => acc + w.amountINR, 0) || 0;
-  const availableBalanceINR = totalDepositsINR - totalWithdrawalsINR;
-
   const totalDepositsUSD = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + d.amountUSD, 0) || 0;
-  const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => acc + w.amountUSD, 0) || 0;
+  const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
+    const fee = w.method === 'USDT' ? 0.5 : 0;
+    return acc + w.amountUSD + fee;
+  }, 0) || 0;
   const availableBalanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
+
+  const totalDepositsINR = totalDepositsUSD * inrRate;
+  const totalWithdrawalsINR = totalWithdrawalsUSD * inrRate;
+  const availableBalanceINR = availableBalanceUSD * inrRate;
 
   return (
     <div className="space-y-8 font-sans">

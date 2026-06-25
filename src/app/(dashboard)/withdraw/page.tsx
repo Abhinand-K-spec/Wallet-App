@@ -20,6 +20,8 @@ interface DepositItem {
 interface WithdrawalItem {
   status: string;
   amountINR: number;
+  amountUSD: number;
+  method: 'BANK' | 'USDT';
 }
 
 export default function WithdrawPage() {
@@ -39,20 +41,29 @@ export default function WithdrawPage() {
   const [error, setError] = useState('');
 
   const { exchangeRate: inrRate, rateLoading } = useExchangeRate();
-  const [balanceINR, setBalanceINR] = useState<number>(0);
+  const [balanceUSD, setBalanceUSD] = useState<number>(0);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
+
+  const balanceINR = balanceUSD * inrRate;
+
+  const isExceeded = method === 'BANK'
+    ? (amountINR && !isNaN(parseFloat(amountINR)) && parseFloat(amountINR) > balanceINR)
+    : (amountUSD && !isNaN(parseFloat(amountUSD)) && parseFloat(amountUSD) + 0.5 > balanceUSD);
 
   const fetchProfileAndBalance = useCallback(async () => {
     try {
       const res = await api.get('/user/profile');
       const user = res.data;
-      const totalDepositsINR = (user.deposits || [])
+      const totalDepositsUSD = (user.deposits || [])
         .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
-        .reduce((acc: number, d: DepositItem) => acc + (d.equivalentINR ?? (d.amountUSD * (d.adminEnteredRate ?? 83.50))), 0);
-      const totalWithdrawalsINR = (user.withdrawals || [])
+        .reduce((acc: number, d: DepositItem) => acc + d.amountUSD, 0);
+      const totalWithdrawalsUSD = (user.withdrawals || [])
         .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
-        .reduce((acc: number, w: WithdrawalItem) => acc + w.amountINR, 0);
-      setBalanceINR(totalDepositsINR - totalWithdrawalsINR);
+        .reduce((acc: number, w: WithdrawalItem) => {
+          const fee = w.method === 'USDT' ? 0.5 : 0;
+          return acc + w.amountUSD + fee;
+        }, 0);
+      setBalanceUSD(totalDepositsUSD - totalWithdrawalsUSD);
     } catch (err) {
       console.error('Failed to fetch profile/balance:', err);
     } finally {
@@ -91,16 +102,30 @@ export default function WithdrawPage() {
     setSuccess('');
 
     const parsedINR = parseFloat(amountINR);
-    if (isNaN(parsedINR) || parsedINR <= 0) {
-      setError('Amount must be greater than 0');
-      setLoading(false);
-      return;
-    }
+    const parsedUSD = parseFloat(amountUSD);
 
-    if (parsedINR > balanceINR) {
-      setError(`Insufficient balance. Maximum available: ₹${balanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR`);
-      setLoading(false);
-      return;
+    if (method === 'BANK') {
+      if (isNaN(parsedINR) || parsedINR <= 0) {
+        setError('Amount must be greater than 0');
+        setLoading(false);
+        return;
+      }
+      if (parsedINR > balanceINR) {
+        setError(`Insufficient balance. Maximum available: ₹${balanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR`);
+        setLoading(false);
+        return;
+      }
+    } else {
+      if (isNaN(parsedUSD) || parsedUSD <= 0) {
+        setError('Amount must be greater than 0');
+        setLoading(false);
+        return;
+      }
+      if (parsedUSD + 0.5 > balanceUSD) {
+        setError(`Insufficient balance. Maximum available: $${Math.max(0, balanceUSD - 0.5).toFixed(4)} USDT (with 0.5 USDT fee)`);
+        setLoading(false);
+        return;
+      }
     }
 
     // Input fields validation
@@ -284,13 +309,19 @@ export default function WithdrawPage() {
                     step="0.01"
                     value={amountINR}
                     onChange={(e) => handleINRChange(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-850 text-white rounded-2xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500/80"
+                    className={`w-full bg-gray-950 border text-white rounded-2xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-4 ${
+                      amountINR && !isNaN(parseFloat(amountINR)) && parseFloat(amountINR) > balanceINR
+                        ? 'border-red-500/80 focus:ring-red-500/15 focus:border-red-500/80'
+                        : 'border-gray-850 focus:ring-indigo-500/15 focus:border-indigo-500/80'
+                    }`}
                     placeholder="10,000.00"
                     required
                   />
                   <span className="absolute left-4 top-3.5 text-gray-500 font-bold font-sans">₹</span>
                 </div>
-
+                {amountINR && !isNaN(parseFloat(amountINR)) && parseFloat(amountINR) > balanceINR && (
+                  <p className="text-red-400 text-xs mt-1.5 font-semibold">Amount exceeds your available balance.</p>
+                )}
               </div>
 
               <div className="pt-5 border-t border-gray-850 space-y-4">
@@ -353,16 +384,33 @@ export default function WithdrawPage() {
                     step="0.0001"
                     value={amountUSD}
                     onChange={(e) => handleUSDChange(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-855 text-white rounded-2xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500/80"
+                    className={`w-full bg-gray-950 border text-white rounded-2xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-4 ${
+                      amountUSD && !isNaN(parseFloat(amountUSD)) && parseFloat(amountUSD) + 0.5 > balanceUSD
+                        ? 'border-red-500/80 focus:ring-red-500/15 focus:border-red-500/80'
+                        : 'border-gray-855 focus:ring-indigo-500/15 focus:border-indigo-500/80'
+                    }`}
                     placeholder="100.0000"
                     required
                   />
                   <span className="absolute left-4 top-3.5 text-gray-500 font-bold font-sans">$</span>
                 </div>
+                {amountUSD && !isNaN(parseFloat(amountUSD)) && parseFloat(amountUSD) + 0.5 > balanceUSD && (
+                  <p className="text-red-400 text-xs mt-1.5 font-semibold">Amount + 0.5 USDT fee exceeds your available balance.</p>
+                )}
                 {amountUSD && !isNaN(parseFloat(amountUSD)) && (
-                  <div className="mt-2 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-3 flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-medium">Equivalent INR (deducted from balance):</span>
-                    <span className="text-emerald-400 font-bold font-mono">₹{(parseFloat(amountUSD) * inrRate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} INR</span>
+                  <div className="mt-2 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-3 space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 font-medium">Platform Fee:</span>
+                      <span className="text-amber-400 font-bold font-mono">0.5000 USDT</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400 font-medium">Total Deducted:</span>
+                      <span className="text-red-400 font-bold font-mono">${(parseFloat(amountUSD) + 0.5).toFixed(4)} USDT</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-emerald-500/10 pt-1 mt-1">
+                      <span className="text-gray-400 font-medium">Equivalent INR (deducted from balance):</span>
+                      <span className="text-emerald-400 font-bold font-mono">₹{((parseFloat(amountUSD) + 0.5) * inrRate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} INR</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -404,7 +452,7 @@ export default function WithdrawPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !!isExceeded}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl py-3.5 transition-all flex items-center justify-center gap-2 mt-6 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98] shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 text-base"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Request Withdrawal'}

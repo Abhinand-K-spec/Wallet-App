@@ -24,12 +24,13 @@ export async function POST(request: Request) {
     const deposits = depositsRes.data || [];
     const withdrawals = withdrawalsRes.data || [];
 
-    // Calculate balance in INR
-    const totalDepositsINR = deposits.reduce((acc, d) => {
-      return acc + (d.equivalent_inr ?? (d.amount_usd * (d.admin_entered_rate ?? 83.50)));
+    // Calculate balance in USD
+    const totalDepositsUSD = deposits.reduce((acc, d) => acc + d.amount_usd, 0);
+    const totalWithdrawalsUSD = withdrawals.reduce((acc, w) => {
+      const fee = w.method === 'USDT' ? 0.5 : 0;
+      return acc + w.amount_usd + fee;
     }, 0);
-    const totalWithdrawalsINR = withdrawals.reduce((acc, w) => acc + w.amount_inr, 0);
-    const availableBalanceINR = totalDepositsINR - totalWithdrawalsINR;
+    const availableBalanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
 
     // Fetch active exchange rate
     const { data: rateSetting } = await supabase
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
       .eq('key', 'USD_INR_RATE')
       .maybeSingle();
     const rate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
+
+    // Available balance in INR calculated dynamically based on current rate
+    const availableBalanceINR = availableBalanceUSD * rate;
 
     let finalAmountUSD = 0;
     let finalAmountINR = 0;
@@ -117,9 +121,9 @@ export async function POST(request: Request) {
 
       finalAmountUSD = parseFloat(amountUSD);
       finalAmountINR = finalAmountUSD * rate;
-      if (finalAmountINR > availableBalanceINR) {
+      if (finalAmountUSD + 0.5 > availableBalanceUSD) {
         return NextResponse.json({ 
-          error: `Insufficient balance. Available: ₹${availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR (approx. $${(availableBalanceINR / rate).toFixed(2)} USDT)` 
+          error: `Insufficient balance. Available: ₹${availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR (approx. $${availableBalanceUSD.toFixed(4)} USDT)` 
         }, { status: 400 });
       }
 

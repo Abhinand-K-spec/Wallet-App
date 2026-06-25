@@ -36,6 +36,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
 
+    // Fetch active exchange rate
+    const { data: rateSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'USD_INR_RATE')
+      .maybeSingle();
+    const rate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
+
     // Build Supabase dynamic query
     let query = supabase.from('profiles').select('*', { count: 'exact' });
 
@@ -89,12 +97,12 @@ export async function GET(request: NextRequest) {
       const approvedWithdrawals = userWithdrawals.filter((w: any) => ['APPROVED', 'PAID'].includes(w.status));
 
       const totalDepositsUSD = approvedDeposits.reduce((sum: number, d: any) => sum + (d.amount_usd || 0), 0);
-      const totalWithdrawalsUSD = approvedWithdrawals.reduce((sum: number, w: any) => sum + (w.amount_usd || 0), 0);
+      const totalWithdrawalsUSD = approvedWithdrawals.reduce((sum: number, w: any) => {
+        const fee = w.method === 'USDT' ? 0.5 : 0;
+        return sum + (w.amount_usd || 0) + fee;
+      }, 0);
       const balanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
-
-      const totalDepositsINR = approvedDeposits.reduce((sum: number, d: any) => sum + (d.equivalent_inr || (d.amount_usd * (d.admin_entered_rate || 83.5))), 0);
-      const totalWithdrawalsINR = approvedWithdrawals.reduce((sum: number, w: any) => sum + (w.amount_inr || 0), 0);
-      const balanceINR = totalDepositsINR - totalWithdrawalsINR;
+      const balanceINR = balanceUSD * rate;
 
       const depositRates = Array.from(new Set(
         approvedDeposits
