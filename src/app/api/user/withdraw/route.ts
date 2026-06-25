@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     // Fetch user's approved deposits and non-rejected withdrawals to check balance
     const [depositsRes, withdrawalsRes] = await Promise.all([
       supabase.from('wallet_deposits').select('*').eq('user_id', user.id).in('status', ['APPROVED', 'SUCCESS']),
-      supabase.from('withdrawals').select('*').eq('user_id', user.id).in('status', ['PENDING', 'APPROVED', 'PAID']),
+      supabase.from('withdrawals').select('*').eq('user_id', user.id).in('status', ['PENDING', 'APPROVED', 'PAID', 'CANCEL_REQUESTED']),
     ]);
 
     const deposits = depositsRes.data || [];

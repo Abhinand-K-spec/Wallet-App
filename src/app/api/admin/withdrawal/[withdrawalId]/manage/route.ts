@@ -24,10 +24,10 @@ export async function POST(
   try {
     const { withdrawalId } = await context.params;
     const body = await request.json();
-    const { action, utr } = body; // action: 'APPROVED' | 'REJECTED' | 'PAID'
+    const { action, utr } = body; // action: 'APPROVED' | 'REJECTED' | 'PAID' | 'CANCELLED' | 'REJECT_CANCEL'
 
-    if (!action || !['APPROVED', 'REJECTED', 'PAID'].includes(action)) {
-      return NextResponse.json({ error: 'Valid action APPROVED, REJECTED or PAID is required' }, { status: 400 });
+    if (!action || !['APPROVED', 'REJECTED', 'PAID', 'CANCELLED', 'REJECT_CANCEL'].includes(action)) {
+      return NextResponse.json({ error: 'Valid action APPROVED, REJECTED, PAID, CANCELLED or REJECT_CANCEL is required' }, { status: 400 });
     }
 
     if (action === 'PAID' && !utr) {
@@ -51,11 +51,14 @@ export async function POST(
       return NextResponse.json({ error: 'Withdrawal not found' }, { status: 404 });
     }
 
+    // Map action to database status
+    const targetStatus = action === 'REJECT_CANCEL' ? 'PENDING' : action;
+
     // Update withdrawal record
     const { data: updatedWithdrawal, error: updateErr } = await supabase
       .from('withdrawals')
       .update({
-        status: action,
+        status: targetStatus,
         approved_by: adminCheck.user.id,
         utr: action === 'PAID' ? utr : withdrawal.utr,
         updated_at: new Date().toISOString()

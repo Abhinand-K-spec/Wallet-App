@@ -65,7 +65,7 @@ export default function WithdrawPage() {
         .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
         .reduce((acc: number, d: DepositItem) => acc + d.amountUSD, 0);
       const totalWithdrawalsUSD = (user.withdrawals || [])
-        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
+        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID', 'CANCEL_REQUESTED'].includes(w.status))
         .reduce((acc: number, w: WithdrawalItem) => {
           const fee = w.method === 'USDT' ? 0.5 : 0;
           return acc + w.amountUSD + fee;
@@ -76,7 +76,7 @@ export default function WithdrawPage() {
         .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
         .reduce((acc: number, d: DepositItem) => acc + (d.equivalentINR || 0), 0);
       const totalWithdrawalsINR = (user.withdrawals || [])
-        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
+        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID', 'CANCEL_REQUESTED'].includes(w.status))
         .reduce((acc: number, w: WithdrawalItem) => {
           const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
           const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;

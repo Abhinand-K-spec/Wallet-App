@@ -24,10 +24,10 @@ export async function POST(
   try {
     const { depositId } = await context.params;
     const body = await request.json();
-    const { action, adminEnteredRate } = body; // action: 'APPROVED' | 'REJECTED'
+    const { action, adminEnteredRate } = body; // action: 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'REJECT_CANCEL'
 
-    if (!action || !['APPROVED', 'REJECTED'].includes(action)) {
-      return NextResponse.json({ error: 'Valid action APPROVED or REJECTED is required' }, { status: 400 });
+    if (!action || !['APPROVED', 'REJECTED', 'CANCELLED', 'REJECT_CANCEL'].includes(action)) {
+      return NextResponse.json({ error: 'Valid action APPROVED, REJECTED, CANCELLED or REJECT_CANCEL is required' }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -47,7 +47,7 @@ export async function POST(
       return NextResponse.json({ error: 'Deposit not found' }, { status: 404 });
     }
 
-    if (deposit.status !== 'PENDING') {
+    if (!['PENDING', 'CANCEL_REQUESTED'].includes(deposit.status)) {
       return NextResponse.json({ error: 'Deposit already processed' }, { status: 400 });
     }
 
@@ -62,13 +62,17 @@ export async function POST(
     const rateFloat = deposit.admin_entered_rate || globalRate;
     const equivalentINR = (action === 'APPROVED') ? deposit.amount_usd * rateFloat : null;
 
+    const targetStatus = action === 'REJECT_CANCEL' ? 'PENDING' : action;
+    const isApproved = action === 'APPROVED';
+    const isCancelled = action === 'CANCELLED';
+
     // Update deposit status
     const { data: updatedDeposit, error: updateErr } = await supabase
       .from('wallet_deposits')
       .update({
-        status: action,
-        admin_entered_rate: (action === 'APPROVED') ? rateFloat : null,
-        equivalent_inr: equivalentINR,
+        status: targetStatus,
+        admin_entered_rate: isApproved ? rateFloat : (isCancelled ? null : deposit.admin_entered_rate),
+        equivalent_inr: isApproved ? equivalentINR : (isCancelled ? null : deposit.equivalent_inr),
         updated_at: new Date().toISOString()
       })
       .eq('id', depositId)
