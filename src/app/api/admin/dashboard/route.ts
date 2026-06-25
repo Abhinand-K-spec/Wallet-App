@@ -31,14 +31,16 @@ export async function GET() {
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'USER'),
       supabase.from('wallet_deposits').select('amount_usd').in('status', ['APPROVED', 'SUCCESS']),
       supabase.from('withdrawals').select('amount_inr').eq('status', 'PAID'),
-      supabase.from('wallet_deposits').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
-      supabase.from('withdrawals').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
+      supabase.from('wallet_deposits').select('id', { count: 'exact', head: true }).in('status', ['PENDING', 'CANCEL_REQUESTED']),
+      supabase.from('withdrawals').select('id', { count: 'exact', head: true }).in('status', ['PENDING', 'CANCEL_REQUESTED']),
     ]);
 
     const totalUsers = usersCount.count || 0;
     const totalDepositsUSD = (depositsRes.data || []).reduce((acc, d) => acc + d.amount_usd, 0);
     const totalWithdrawalsINR = (withdrawalsRes.data || []).reduce((acc, w) => acc + w.amount_inr, 0);
-    const pendingRequests = (pendingDepositsCount.count || 0) + (pendingWithdrawalsCount.count || 0);
+    const pendingDeposits = pendingDepositsCount.count || 0;
+    const pendingWithdrawals = pendingWithdrawalsCount.count || 0;
+    const pendingRequests = pendingDeposits + pendingWithdrawals;
 
     const adminWalletAddress = process.env.ADMIN_WALLET_ADDRESS || '';
     let ethBalance = 0;
@@ -64,6 +66,8 @@ export async function GET() {
       totalDepositsUSD,
       totalWithdrawalsINR,
       pendingRequests,
+      pendingDeposits,
+      pendingWithdrawals,
       walletDetails: {
         address: adminWalletAddress,
         ethBalance,
