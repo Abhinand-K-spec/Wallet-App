@@ -63,7 +63,7 @@ export default function WithdrawPage() {
           const fee = w.method === 'USDT' ? 0.5 : 0;
           return acc + w.amountUSD + fee;
         }, 0);
-      setBalanceUSD(totalDepositsUSD - totalWithdrawalsUSD);
+      setBalanceUSD(Math.max(0, totalDepositsUSD - totalWithdrawalsUSD));
     } catch (err) {
       console.error('Failed to fetch profile/balance:', err);
     } finally {

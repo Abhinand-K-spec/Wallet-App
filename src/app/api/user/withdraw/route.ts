@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       const fee = w.method === 'USDT' ? 0.5 : 0;
       return acc + w.amount_usd + fee;
     }, 0);
-    const availableBalanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
+    const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
 
     // Fetch active exchange rate
     const { data: rateSetting } = await supabase

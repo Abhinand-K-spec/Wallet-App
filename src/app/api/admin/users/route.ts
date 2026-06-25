@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         const fee = w.method === 'USDT' ? 0.5 : 0;
         return sum + (w.amount_usd || 0) + fee;
       }, 0);
-      const balanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
+      const balanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
       const balanceINR = balanceUSD * rate;
 
       const depositRates = Array.from(new Set(

@@ -85,7 +85,7 @@ const UserDashboard = () => {
     const fee = w.method === 'USDT' ? 0.5 : 0;
     return acc + w.amountUSD + fee;
   }, 0) || 0;
-  const availableBalanceUSD = totalDepositsUSD - totalWithdrawalsUSD;
+  const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
 
   const totalDepositsINR = totalDepositsUSD * inrRate;
   const totalWithdrawalsINR = totalWithdrawalsUSD * inrRate;
