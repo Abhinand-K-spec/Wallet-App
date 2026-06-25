@@ -13,8 +13,15 @@ const LoginPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Forgot Password States
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   // OTP States
   const [showOtpScreen, setShowOtpScreen] = useState(false);
@@ -47,6 +54,12 @@ const LoginPage = () => {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (isRegistering && password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -81,6 +94,26 @@ const LoginPage = () => {
       dispatch(addToast({ message: msg, type: 'error' }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setForgotSuccess('');
+    setForgotLoading(true);
+
+    try {
+      await api.post('/auth/forgot-password', { email: forgotEmail });
+      setForgotSuccess('A password reset link has been sent to your email.');
+      dispatch(addToast({ message: 'Password reset link sent!', type: 'success' }));
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { error?: string } } };
+      const msg = axiosError.response?.data?.error || 'Failed to request password reset';
+      setError(msg);
+      dispatch(addToast({ message: msg, type: 'error' }));
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -322,6 +355,80 @@ const LoginPage = () => {
               </button>
             </div>
           </div>
+        ) : isForgotPassword ? (
+          <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
+            {/* Mobile branding */}
+            <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
+              <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg border border-indigo-400/20">
+                <Wallet className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+            </div>
+
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">
+                Reset Password
+              </h1>
+              <p className="text-gray-400 text-xs mt-2 leading-relaxed">
+                Enter your email address to receive a secure password reset link
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5 animate-pulse" />
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {forgotSuccess && (
+              <div className="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                <p className="text-emerald-400 text-sm">{forgotSuccess}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 pl-1">
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-indigo-500 text-white rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all pl-12 font-sans"
+                    placeholder="email@example.com"
+                    required
+                  />
+                  <Wallet className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-indigo-400 transition-colors" />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl py-4 transition-all duration-300 flex items-center justify-center gap-2 mt-6 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                {forgotLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send Reset Link'}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setError('');
+                  setForgotSuccess('');
+                }}
+                className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors cursor-pointer"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
             {/* Mobile branding */}
@@ -381,6 +488,39 @@ const LoginPage = () => {
                 </div>
               </div>
 
+              {isRegistering && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 pl-1">Confirm Password</label>
+                  <div className="relative group">
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-indigo-500 text-white rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all pl-12 font-sans"
+                      placeholder="••••••••"
+                      required
+                    />
+                    <KeyRound className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-indigo-400 transition-colors" />
+                  </div>
+                </div>
+              )}
+
+              {!isRegistering && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(true);
+                      setError('');
+                      setForgotSuccess('');
+                    }}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -397,6 +537,7 @@ const LoginPage = () => {
                   setIsRegistering(!isRegistering);
                   setIdentifier('');
                   setPassword('');
+                  setConfirmPassword('');
                   setError('');
                 }}
                 className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors cursor-pointer"

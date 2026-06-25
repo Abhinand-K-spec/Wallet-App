@@ -23,6 +23,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: authErr?.message || 'Verification failed. Invalid or expired code.' }, { status: 400 });
     }
 
+    // Update profile to set email_verified to true
+    await supabase
+      .from('profiles')
+      .update({ email_verified: true })
+      .eq('id', authData.user.id);
+
     // Retrieve profile
     const { data: profile, error: profileErr } = await supabase
       .from('profiles')

@@ -54,12 +54,7 @@ export default function WithdrawPage() {
       const res = await api.get('/user/profile');
       const user = res.data;
 
-      // Email verification check
-      if (!user.email_verified) {
-        dispatch(addToast({ message: 'Email verification is required to withdraw funds.', type: 'info' }));
-        router.replace('/dashboard');
-        return;
-      }
+
 
       const totalDepositsUSD = (user.deposits || [])
         .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))

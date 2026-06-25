@@ -35,21 +35,8 @@ export default function DepositPage() {
 
   // Email verification check on mount
   useEffect(() => {
-    const checkVerification = async () => {
-      try {
-        const res = await api.get('/user/profile');
-        if (!res.data.email_verified) {
-          dispatch(addToast({ message: 'Email verification is required to deposit funds.', type: 'info' }));
-          router.replace('/dashboard');
-        }
-      } catch (err) {
-        console.error('Failed to verify profile status:', err);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    checkVerification();
-  }, [router, dispatch]);
+    setProfileLoading(false);
+  }, []);
 
   // Fetch Wallet Address
   useEffect(() => {
