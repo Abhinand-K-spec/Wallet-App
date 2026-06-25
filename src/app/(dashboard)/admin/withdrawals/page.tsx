@@ -42,8 +42,14 @@ export default function AdminWithdrawalsPage() {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
+  const [completedPage, setCompletedPage] = useState(1);
+  const completedLimit = 10;
   
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    setCompletedPage(1);
+  }, [refreshKey]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => ({
@@ -210,6 +216,11 @@ export default function AdminWithdrawalsPage() {
   const pendingWithdrawals = withdrawals.filter(w => w.status === 'PENDING');
   const approvedWithdrawals = withdrawals.filter(w => w.status === 'APPROVED');
   const completedWithdrawals = withdrawals.filter(w => ['PAID', 'REJECTED'].includes(w.status));
+  const completedTotalPages = Math.ceil(completedWithdrawals.length / completedLimit);
+  const paginatedCompletedWithdrawals = completedWithdrawals.slice(
+    (completedPage - 1) * completedLimit,
+    completedPage * completedLimit
+  );
 
   return (
     <div className="space-y-8 font-sans">
@@ -473,7 +484,7 @@ export default function AdminWithdrawalsPage() {
         {completedWithdrawals.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-400 mb-4">Completed / Rejected</h2>
-            <div>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-lg overflow-hidden">
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -490,7 +501,7 @@ export default function AdminWithdrawalsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {completedWithdrawals.map((w) => (
+                    {paginatedCompletedWithdrawals.map((w) => (
                       <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 text-gray-300">{w.user.email}</td>
                         <td className="px-6 py-4 font-medium text-white font-mono">${w.amountUSD.toFixed(4)}</td>
@@ -528,7 +539,7 @@ export default function AdminWithdrawalsPage() {
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-800">
-                {completedWithdrawals.map((w) => (
+                {paginatedCompletedWithdrawals.map((w) => (
                   <div key={w.id} className="p-4 space-y-4 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]">{w.user.email}</span>
@@ -598,6 +609,31 @@ export default function AdminWithdrawalsPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {completedTotalPages > 1 && (
+                <div className="flex items-center justify-between p-6 border-t border-gray-800 bg-gray-900/35">
+                  <p className="text-xs text-gray-500">
+                    Showing Page {completedPage} of {completedTotalPages} ({completedWithdrawals.length} withdrawals total)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCompletedPage(prev => Math.max(prev - 1, 1))}
+                      disabled={completedPage === 1}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCompletedPage(prev => Math.min(prev + 1, completedTotalPages))}
+                      disabled={completedPage === completedTotalPages}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

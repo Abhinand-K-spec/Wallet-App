@@ -260,7 +260,13 @@ export default function AdminDepositsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [processedPage, setProcessedPage] = useState(1);
+  const processedLimit = 10;
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    setProcessedPage(1);
+  }, [refreshKey]);
 
   useEffect(() => {
     let active = true;
@@ -305,6 +311,11 @@ export default function AdminDepositsPage() {
 
   const pendingDeposits = deposits.filter(d => d.status === 'PENDING');
   const processedDeposits = deposits.filter(d => d.status !== 'PENDING');
+  const processedTotalPages = Math.ceil(processedDeposits.length / processedLimit);
+  const paginatedProcessedDeposits = processedDeposits.slice(
+    (processedPage - 1) * processedLimit,
+    processedPage * processedLimit
+  );
 
   return (
     <div className="space-y-8 font-sans">
@@ -385,7 +396,7 @@ export default function AdminDepositsPage() {
         {processedDeposits.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-400 mb-4">Processed Deposits</h2>
-            <div>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-lg overflow-hidden">
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -400,7 +411,7 @@ export default function AdminDepositsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {processedDeposits.map((d) => (
+                    {paginatedProcessedDeposits.map((d) => (
                       <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 text-gray-300">{d.user.email}</td>
                         <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(4)}</td>
@@ -416,7 +427,7 @@ export default function AdminDepositsPage() {
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-800">
-                {processedDeposits.map((d) => (
+                {paginatedProcessedDeposits.map((d) => (
                   <div key={d.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]">{d.user.email}</span>
@@ -445,6 +456,31 @@ export default function AdminDepositsPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Pagination Controls */}
+              {processedTotalPages > 1 && (
+                <div className="flex items-center justify-between p-6 border-t border-gray-800 bg-gray-900/35">
+                  <p className="text-xs text-gray-500">
+                    Showing Page {processedPage} of {processedTotalPages} ({processedDeposits.length} deposits total)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setProcessedPage(prev => Math.max(prev - 1, 1))}
+                      disabled={processedPage === 1}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setProcessedPage(prev => Math.min(prev + 1, processedTotalPages))}
+                      disabled={processedPage === processedTotalPages}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-950 border border-gray-800 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

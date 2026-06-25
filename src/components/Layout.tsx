@@ -108,7 +108,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
           {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="fixed inset-0 bg-black/75 animate-fade-in" onClick={() => setIsMobileMenuOpen(false)} />
           
           {/* Drawer Menu */}
           <div className="relative w-full max-w-[280px] bg-gray-900 border-r border-gray-850 flex flex-col p-6 animate-slide-in">
