@@ -23,21 +23,64 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: authErr?.message || 'Verification failed. Invalid or expired code.' }, { status: 400 });
     }
 
-    // Update profile to set email_verified to true
-    await supabase
-      .from('profiles')
-      .update({ email_verified: true })
-      .eq('id', authData.user.id);
-
     // Retrieve profile
-    const { data: profile, error: profileErr } = await supabase
+    let { data: profile, error: profileErr } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
 
-    if (profileErr || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+    if (!profile) {
+      // Profile does not exist - create it manually
+      // Get the next user ID by ordering by created_at descending
+      const { data: latestUsers } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let nextNum = 1000;
+      if (latestUsers && latestUsers.length > 0) {
+        const latestId = latestUsers[0].user_id;
+        const match = latestId.match(/USR-(\d+)/);
+        if (match) {
+          nextNum = parseInt(match[1], 10) + 1;
+        }
+      }
+      const newUserId = `USR-${nextNum}`;
+
+      const { data: newProfile, error: insertErr } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          user_id: newUserId,
+          email: email,
+          role: 'USER',
+          status: 'ACTIVE',
+          email_verified: true
+        })
+        .select()
+        .single();
+
+      if (insertErr || !newProfile) {
+        console.error('Failed to manually insert profile:', insertErr);
+        return NextResponse.json({ error: 'User profile not found or failed to initialize' }, { status: 404 });
+      }
+      profile = newProfile;
+    } else {
+      // Profile exists - update email_verified to true
+      const { data: updatedProfile, error: updateErr } = await supabase
+        .from('profiles')
+        .update({ email_verified: true })
+        .eq('id', authData.user.id)
+        .select()
+        .single();
+
+      if (updateErr || !updatedProfile) {
+        console.error('Failed to update existing profile email_verified:', updateErr);
+        return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
+      }
+      profile = updatedProfile;
     }
 
     return NextResponse.json({
