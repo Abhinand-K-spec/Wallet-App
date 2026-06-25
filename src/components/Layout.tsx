@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/authSlice';
 import type { RootState } from '../store/store';
-import { LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, History, LogOut, Wallet, Users, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, History, LogOut, Wallet, Users, Menu, X, Send } from 'lucide-react';
 import api from '../api/axios';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -72,6 +72,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             )
           })}
+          <a
+            href="https://t.me/+NO_KPQL5h8lkNmZl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:bg-gray-800/40 hover:text-gray-200 border-l-2 border-transparent transition-all duration-300 cursor-pointer"
+          >
+            <Send className="w-5 h-5 mr-3 text-gray-500" />
+            Customer Care
+          </a>
         </div>
 
         <div className="p-4 border-t border-gray-800/80 bg-gray-950/20">
@@ -135,6 +144,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   </Link>
                 )
               })}
+              <a
+                href="https://t.me/+NO_KPQL5h8lkNmZl"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-gray-400 hover:bg-gray-800/40 hover:text-gray-200 border-l-2 border-transparent transition-all duration-300 cursor-pointer"
+              >
+                <Send className="w-5 h-5 mr-3 text-gray-500" />
+                Customer Care
+              </a>
             </div>
 
             <div className="border-t border-gray-800 pt-6">
