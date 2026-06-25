@@ -193,6 +193,11 @@ const AdminDashboard = () => {
                   <div className="bg-gray-950 p-4 rounded-xl border border-gray-800/80">
                     <label className="text-xs text-gray-500 font-medium block mb-1">USDT Balance</label>
                     <p className="text-lg font-bold text-green-400">${stats.walletDetails.usdtBalance.toFixed(4)}</p>
+                    {appRate && (
+                      <span className="text-[11px] text-gray-400 block mt-1 font-medium">
+                        ≈ ₹{(stats.walletDetails.usdtBalance * appRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    )}
                   </div>
                   <div className="bg-gray-950 p-4 rounded-xl border border-gray-800/80">
                     <label className="text-xs text-gray-500 font-medium block mb-1">
