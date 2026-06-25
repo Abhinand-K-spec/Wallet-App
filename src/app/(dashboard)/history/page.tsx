@@ -165,7 +165,7 @@ export default function HistoryPage() {
                       <tr key={tx.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
                               }`}>
                               {tx.transactionType === 'DEPOSIT'
                                 ? <ArrowUpFromLine className="w-3 h-3" />
@@ -227,7 +227,7 @@ export default function HistoryPage() {
                   <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-1">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
                           {tx.transactionType === 'DEPOSIT'
                             ? <ArrowUpFromLine className="w-3 h-3" />
                             : <ArrowDownToLine className="w-3 h-3" />}

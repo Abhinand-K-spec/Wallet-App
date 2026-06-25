@@ -175,7 +175,7 @@ const UserDashboard = () => {
         <div className="lg:col-span-5 space-y-6">
           {/* Total Deposits Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
+            <div className="p-3 bg-red-500/10 rounded-xl text-red-400 shrink-0">
               <ArrowUpFromLine className="w-5 h-5" />
             </div>
             <div>
@@ -187,7 +187,7 @@ const UserDashboard = () => {
 
           {/* Total Withdrawals Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
-            <div className="p-3 bg-orange-500/10 rounded-xl text-orange-400 shrink-0">
+            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
               <ArrowDownToLine className="w-5 h-5" />
             </div>
             <div>
@@ -230,8 +230,8 @@ const UserDashboard = () => {
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border ${
                             tx.transactionType === 'DEPOSIT' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' 
-                              : 'bg-orange-500/10 text-orange-400 border-orange-500/10'
+                              ? 'bg-red-500/10 text-red-400 border-red-500/10' 
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
                           }`}>
                             {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3.5 h-3.5" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
                             {tx.transactionType}
@@ -262,8 +262,8 @@ const UserDashboard = () => {
                     <div className="flex items-center justify-between">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-xl text-[10px] font-semibold border ${
                         tx.transactionType === 'DEPOSIT' 
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' 
-                          : 'bg-orange-500/10 text-orange-400 border-orange-500/10'
+                          ? 'bg-red-500/10 text-red-400 border-red-500/10' 
+                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
                       }`}>
                         {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3 h-3" /> : <ArrowDownToLine className="w-3 h-3" />}
                         {tx.transactionType}
