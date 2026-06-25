@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, CreditCard, Loader2, Copy, Check, Download } from 'lucide-react';
+import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, CreditCard, Loader2, Copy, Check, Download, ChevronDown } from 'lucide-react';
 
 interface Withdrawal {
   id: string;
@@ -41,6 +41,7 @@ export default function AdminWithdrawalsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+  const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
   
   const dispatch = useDispatch();
 
@@ -62,7 +63,7 @@ export default function AdminWithdrawalsPage() {
     });
   };
 
-  const downloadCSV = async () => {
+  const downloadData = (format: 'csv' | 'ssv') => {
     const selectedWithdrawals = withdrawals.filter(w => selectedIds[w.id]);
     if (selectedWithdrawals.length === 0) {
       dispatch(addToast({ message: 'Please select at least one request to download.', type: 'error' }));
@@ -95,39 +96,44 @@ export default function AdminWithdrawalsPage() {
       new Date(w.createdAt).toLocaleString()
     ]);
 
-    const csvContent = [
-      headers.join(','),
+    const delimiter = format === 'ssv' ? ';' : ',';
+
+    const content = [
+      headers.join(delimiter),
       ...rows.map(row => row.map(val => {
         const stringVal = val ? String(val).replace(/"/g, '""') : '';
         return `"${stringVal}"`;
-      }).join(','))
+      }).join(delimiter))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `withdrawals_export_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `withdrawals_export_${new Date().toISOString().slice(0,10)}.${format}`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     // Save downloaded state in database
     try {
       const ids = selectedWithdrawals.map(w => w.id);
-      await api.post('/admin/withdrawals/mark-downloaded', { ids });
+      api.post('/admin/withdrawals/mark-downloaded', { ids }).catch(err => {
+        console.error('Failed to mark withdrawals as downloaded:', err);
+      });
       
       // Update local state
       setWithdrawals(prev => prev.map(w => ids.includes(w.id) ? { ...w, downloaded: true } : w));
       
       // Clear selection
       setSelectedIds({});
-      dispatch(addToast({ message: `Successfully downloaded CSV for ${selectedWithdrawals.length} requests!`, type: 'success' }));
+      dispatch(addToast({ message: `Successfully downloaded ${format.toUpperCase()} for ${selectedWithdrawals.length} requests!`, type: 'success' }));
     } catch (err) {
       console.error('Failed to mark withdrawals as downloaded:', err);
-      dispatch(addToast({ message: 'CSV downloaded, but failed to save status to database', type: 'error' }));
+      dispatch(addToast({ message: `${format.toUpperCase()} downloaded, but failed to save status to database`, type: 'error' }));
     }
+
+    setIsDownloadDropdownOpen(false);
   };
 
   const handleCopy = (text: string) => {
@@ -602,20 +608,39 @@ export default function AdminWithdrawalsPage() {
             <span className="text-sm font-semibold text-white">
               {Object.values(selectedIds).filter(Boolean).length} requests selected
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative">
               <button
-                onClick={() => setSelectedIds({})}
+                onClick={() => { setSelectedIds({}); setIsDownloadDropdownOpen(false); }}
                 className="px-4 py-2 hover:bg-gray-900 text-gray-400 hover:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
               >
                 Clear Selection
               </button>
-              <button
-                onClick={downloadCSV}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setIsDownloadDropdownOpen(!isDownloadDropdownOpen)}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {isDownloadDropdownOpen && (
+                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-xl py-1 z-50">
+                    <button
+                      onClick={() => downloadData('csv')}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-850 text-gray-300 hover:text-white text-xs font-semibold cursor-pointer"
+                    >
+                      CSV (Comma Separated)
+                    </button>
+                    <button
+                      onClick={() => downloadData('ssv')}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-850 text-gray-300 hover:text-white text-xs font-semibold cursor-pointer"
+                    >
+                      Excel / SSV (Semicolon Separated)
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
