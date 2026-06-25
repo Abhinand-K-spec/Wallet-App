@@ -136,7 +136,7 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5 font-sans">On-Chain Amount</span>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-white font-mono">${result.amountUSD.toFixed(2)}</span>
+                  <span className="font-bold text-white font-mono">${result.amountUSD.toFixed(4)}</span>
                   <span className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-sans">Matches</span>
                 </div>
               </div>
@@ -188,14 +188,14 @@ const BlockchainStatusChecker = ({ depositId }: BlockchainStatusCheckerProps) =>
             </div>
 
             <p className="text-xs text-amber-400/90 leading-relaxed font-medium">
-              Alert: The transaction hash matches, but the on-chain amount (${result.amountUSD.toFixed(2)}) does not match the submitted amount (${data.submittedAmount.toFixed(2)}).
+              Alert: The transaction hash matches, but the on-chain amount (${result.amountUSD.toFixed(4)}) does not match the submitted amount (${data.submittedAmount.toFixed(4)}).
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-sans">
               <div className="bg-gray-950 p-2.5 rounded-lg border border-gray-800">
                 <span className="text-gray-500 block mb-0.5">On-Chain Amount</span>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-red-400 font-mono">${result.amountUSD.toFixed(2)}</span>
+                  <span className="font-bold text-red-400 font-mono">${result.amountUSD.toFixed(4)}</span>
                   <span className="text-[10px] font-semibold bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded">Mismatch</span>
                 </div>
               </div>
@@ -342,7 +342,7 @@ export default function AdminDepositsPage() {
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3 pl-12">
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Amount</p>
-                          <p className="text-lg font-bold text-white font-mono">${deposit.amountUSD.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-white font-mono">${deposit.amountUSD.toFixed(4)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Tx Hash</p>
@@ -403,7 +403,7 @@ export default function AdminDepositsPage() {
                     {processedDeposits.map((d) => (
                       <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 text-gray-300">{d.user.email}</td>
-                        <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-400 font-mono">{d.adminEnteredRate ? `₹${d.adminEnteredRate}` : '—'}</td>
                         <td className="px-6 py-4 text-gray-300 font-mono">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4"><span className={statusBadge(d.status)}>{d.status}</span></td>
@@ -424,8 +424,8 @@ export default function AdminDepositsPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">Amount (USD)</p>
-                        <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">Amount (USDT)</p>
+                        <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(4)}</p>
                       </div>
                       <div>
                         <p className="text-[10px] text-gray-500">Rate</p>

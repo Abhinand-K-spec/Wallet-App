@@ -125,8 +125,8 @@ const AdminDashboard = () => {
               <ArrowDownToLine className="w-6 h-6 text-green-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-400">Total Deposits (USD)</p>
-              <h3 className="text-2xl font-bold text-white">${stats?.totalDepositsUSD?.toFixed(2) || '0.00'}</h3>
+              <p className="text-sm font-medium text-gray-400">Total Deposits (USDT)</p>
+              <h3 className="text-2xl font-bold text-white">${stats?.totalDepositsUSD?.toFixed(4) || '0.0000'}</h3>
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-950 p-4 rounded-xl border border-gray-800/80">
                     <label className="text-xs text-gray-500 font-medium block mb-1">USDT Balance</label>
-                    <p className="text-lg font-bold text-green-400">${stats.walletDetails.usdtBalance.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-green-400">${stats.walletDetails.usdtBalance.toFixed(4)}</p>
                   </div>
                   <div className="bg-gray-950 p-4 rounded-xl border border-gray-800/80">
                     <label className="text-xs text-gray-500 font-medium block mb-1">
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
                 <RefreshCw className="w-5 h-5 text-indigo-400" />
                 Application Exchange Rate
               </h2>
-              <p className="text-xs text-gray-400 leading-relaxed">Configure the USD to INR conversion rate applied globally for user withdrawals.</p>
+              <p className="text-xs text-gray-400 leading-relaxed">Configure the USDT to INR conversion rate applied globally for user withdrawals.</p>
               
               <div className="bg-gray-950 p-4 rounded-xl border border-gray-800/80 flex items-center justify-between">
                 <span className="text-xs text-gray-400 font-medium">Active Rate:</span>
@@ -236,7 +236,7 @@ const AdminDashboard = () => {
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-500 font-medium block mb-1">Set Exchange Rate (₹ per $1.00)</label>
+                  <label className="text-xs text-gray-500 font-medium block mb-1">Set Exchange Rate (₹ per 1.00 USDT)</label>
                   <div className="relative">
                     <input
                       type="number"

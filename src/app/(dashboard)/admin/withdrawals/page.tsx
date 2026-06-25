@@ -73,7 +73,7 @@ export default function AdminWithdrawalsPage() {
       'Request ID',
       'User Email',
       'Method',
-      'USD Amount',
+      'USDT Amount',
       'INR Amount',
       'Beneficiary Name',
       'Account Number / Wallet Address',
@@ -86,7 +86,7 @@ export default function AdminWithdrawalsPage() {
       w.id,
       w.user.email,
       w.method,
-      w.amountUSD.toFixed(2),
+      w.amountUSD.toFixed(4),
       w.amountINR.toFixed(2),
       w.accountHolder,
       w.method === 'USDT' ? w.walletAddress : w.accountNumber,
@@ -270,8 +270,8 @@ export default function AdminWithdrawalsPage() {
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3 pl-12">
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider">USD Amount</p>
-                          <p className="text-lg font-bold text-white">${w.amountUSD.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">USDT Amount</p>
+                          <p className="text-lg font-bold text-white">${w.amountUSD.toFixed(4)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">INR Amount</p>
@@ -425,8 +425,8 @@ export default function AdminWithdrawalsPage() {
                           <p className="text-xl font-bold text-emerald-400 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider">USD Equiv.</p>
-                          <p className="text-lg font-medium text-gray-300 font-mono">${w.amountUSD.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">USDT Equiv.</p>
+                          <p className="text-lg font-medium text-gray-300 font-mono">${w.amountUSD.toFixed(4)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wider">Approved At</p>
@@ -474,7 +474,7 @@ export default function AdminWithdrawalsPage() {
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">User</th>
-                      <th className="px-6 py-4 font-medium">USD</th>
+                      <th className="px-6 py-4 font-medium">USDT</th>
                       <th className="px-6 py-4 font-medium">INR</th>
                       <th className="px-6 py-4 font-medium">Payout Info</th>
                       <th className="px-6 py-4 font-medium">UTR / TxID</th>
@@ -487,7 +487,7 @@ export default function AdminWithdrawalsPage() {
                     {completedWithdrawals.map((w) => (
                       <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 text-gray-300">{w.user.email}</td>
-                        <td className="px-6 py-4 font-medium text-white font-mono">${w.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium text-white font-mono">${w.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
                         <td className="px-6 py-4 text-gray-400 text-xs">
                           {w.method === 'USDT' ? (
@@ -530,8 +530,8 @@ export default function AdminWithdrawalsPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">Amount (USD)</p>
-                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">Amount (USDT)</p>
+                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(4)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">Amount (INR)</p>

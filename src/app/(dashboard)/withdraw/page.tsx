@@ -68,7 +68,7 @@ export default function WithdrawPage() {
     setAmountINR(val);
     const num = parseFloat(val);
     if (!isNaN(num)) {
-      setAmountUSD((num / inrRate).toFixed(2));
+      setAmountUSD((num / inrRate).toFixed(4));
     } else {
       setAmountUSD('');
     }
@@ -160,7 +160,7 @@ export default function WithdrawPage() {
 
       const formattedAmount = method === 'BANK'
         ? `₹${parsedINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
-        : `$${parseFloat(amountUSD).toFixed(2)} USDT (₹${parsedINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`;
+        : `$${parseFloat(amountUSD).toFixed(4)} USDT (₹${parsedINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })})`;
 
       const msg = `Withdrawal request for ${formattedAmount} submitted successfully! Pending admin approval.`;
       setSuccess(msg);
@@ -262,12 +262,12 @@ export default function WithdrawPage() {
               <div>
                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Exchange Rate (Live)</p>
                 <p className="text-sm font-bold text-white mt-0.5 font-mono">
-                  {rateLoading ? 'Fetching...' : `1 USD = ₹${inrRate.toFixed(2)} INR`}
+                  {rateLoading ? 'Fetching...' : `1 USDT = ₹${inrRate.toFixed(2)} INR`}
                 </p>
               </div>
             </div>
             <div className="text-[9px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-black border border-indigo-500/20 font-sans shrink-0 self-start">
-              USD / INR
+              USDT / INR
             </div>
           </div>
         </div>
@@ -290,12 +290,7 @@ export default function WithdrawPage() {
                   />
                   <span className="absolute left-4 top-3.5 text-gray-500 font-bold font-sans">₹</span>
                 </div>
-                {amountINR && !isNaN(parseFloat(amountINR)) && (
-                  <div className="mt-2 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-3 flex items-center justify-between text-xs">
-                    <span className="text-gray-400 font-medium">Equivalent USDT/USD:</span>
-                    <span className="text-emerald-400 font-bold font-mono">${(parseFloat(amountINR) / inrRate).toFixed(2)} USD</span>
-                  </div>
-                )}
+
               </div>
 
               <div className="pt-5 border-t border-gray-850 space-y-4">
@@ -351,15 +346,15 @@ export default function WithdrawPage() {
           {method === 'USDT' && (
             <>
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Withdrawal Amount (USDT / USD)</label>
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Withdrawal Amount (USDT)</label>
                 <div className="relative rounded-2xl shadow-sm">
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.0001"
                     value={amountUSD}
                     onChange={(e) => handleUSDChange(e.target.value)}
                     className="w-full bg-gray-950 border border-gray-855 text-white rounded-2xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500/80"
-                    placeholder="100.00"
+                    placeholder="100.0000"
                     required
                   />
                   <span className="absolute left-4 top-3.5 text-gray-500 font-bold font-sans">$</span>

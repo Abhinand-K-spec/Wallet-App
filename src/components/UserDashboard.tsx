@@ -122,7 +122,7 @@ const UserDashboard = () => {
             <div className="relative z-10 my-4">
               <p className="text-[10px] text-indigo-200 uppercase font-bold tracking-widest pl-0.5">Available Balance</p>
               <h3 className="text-3xl font-black text-white mt-1">₹{availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-              <p className="text-xs text-indigo-200/80 font-mono mt-0.5 pl-0.5">${availableBalanceUSD.toFixed(2)} USDT</p>
+              <p className="text-xs text-indigo-200/80 font-mono mt-0.5 pl-0.5">${availableBalanceUSD.toFixed(4)} USDT</p>
             </div>
 
             <div className="flex items-center justify-between relative z-10 pt-3 border-t border-indigo-400/20 text-xs">
@@ -176,24 +176,24 @@ const UserDashboard = () => {
           {/* Total Deposits Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
             <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-              <ArrowDownToLine className="w-5 h-5" />
+              <ArrowUpFromLine className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-gray-500 font-semibold uppercase">Total Deposits</p>
               <h3 className="text-xl font-bold text-white mt-0.5">₹{totalDepositsINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalDepositsUSD.toFixed(2)} USDT</p>
+              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalDepositsUSD.toFixed(4)} USDT</p>
             </div>
           </div>
 
           {/* Total Withdrawals Card */}
           <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
             <div className="p-3 bg-orange-500/10 rounded-xl text-orange-400 shrink-0">
-              <ArrowUpFromLine className="w-5 h-5" />
+              <ArrowDownToLine className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs text-gray-500 font-semibold uppercase">Total Withdrawals</p>
               <h3 className="text-xl font-bold text-white mt-0.5">₹{totalWithdrawalsINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalWithdrawalsUSD.toFixed(2)} USDT</p>
+              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalWithdrawalsUSD.toFixed(4)} USDT</p>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ const UserDashboard = () => {
                   <thead className="bg-gray-800/40 text-gray-400 text-xs font-semibold uppercase tracking-wider border-b border-gray-800/50">
                     <tr>
                       <th className="px-6 py-4">Type</th>
-                      <th className="px-6 py-4">Amount (USD)</th>
+                      <th className="px-6 py-4">Amount (USDT)</th>
                       <th className="px-6 py-4">Amount (INR)</th>
                       <th className="px-6 py-4">Status</th>
                       <th className="px-6 py-4">Date</th>
@@ -233,11 +233,11 @@ const UserDashboard = () => {
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' 
                               : 'bg-orange-500/10 text-orange-400 border-orange-500/10'
                           }`}>
-                            {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
+                            {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3.5 h-3.5" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
                             {tx.transactionType}
                           </span>
                         </td>
-                        <td className="px-6 py-4 font-bold text-gray-200 font-mono">${tx.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-bold text-gray-200 font-mono">${tx.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300 font-bold font-mono">
                           {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
                         </td>
@@ -265,7 +265,7 @@ const UserDashboard = () => {
                           ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' 
                           : 'bg-orange-500/10 text-orange-400 border-orange-500/10'
                       }`}>
-                        {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3 h-3" /> : <ArrowUpFromLine className="w-3 h-3" />}
+                        {tx.transactionType === 'DEPOSIT' ? <ArrowUpFromLine className="w-3 h-3" /> : <ArrowDownToLine className="w-3 h-3" />}
                         {tx.transactionType}
                       </span>
                       <span className={statusBadge(tx.status)}>
@@ -274,8 +274,8 @@ const UserDashboard = () => {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">USD Amount</p>
-                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">USDT Amount</p>
+                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(4)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Value</p>

@@ -178,7 +178,7 @@ export const DynamicPaymentQR: React.FC<DynamicPaymentQRProps> = ({
         {/* Amount display */}
         <div className="text-center mb-4">
           <span className="text-xs text-gray-500 block">Total Requested</span>
-          <span className="text-2xl font-black text-white tracking-wide">${parseFloat(amount).toFixed(2)} <span className="text-sm font-bold text-indigo-400">USDT</span></span>
+          <span className="text-2xl font-black text-white tracking-wide">${parseFloat(amount).toFixed(4)} <span className="text-sm font-bold text-indigo-400">USDT</span></span>
         </div>
 
         {/* Address and copy button */}

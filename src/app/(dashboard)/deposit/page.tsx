@@ -298,7 +298,7 @@ export default function DepositPage() {
                       onChange={(e) => setAmountUSD(e.target.value)}
                       disabled={submitting}
                       className="block w-full pl-11 pr-16 bg-gray-950 border border-gray-850 rounded-2xl py-3.5 text-white placeholder-gray-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-500/80 text-base transition-all duration-200 disabled:opacity-50"
-                      placeholder="0.00"
+                      placeholder="0.0000"
                       required
                     />
                     <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">

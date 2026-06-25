@@ -27,8 +27,12 @@ export const PaymentAmountInput: React.FC<PaymentAmountInputProps> = ({
     ? (numAmount / exchangeRate) 
     : (numAmount * exchangeRate);
 
-  const displayConverted = isNaN(convertedAmount) ? '0.00' : convertedAmount.toFixed(2);
-  const displayEntered = numAmount > 0 ? numAmount.toFixed(2) : '0.00';
+  const displayConverted = isNaN(convertedAmount) 
+    ? (currency === 'INR' ? '0.0000' : '0.00') 
+    : convertedAmount.toFixed(currency === 'INR' ? 4 : 2);
+  const displayEntered = numAmount > 0 
+    ? numAmount.toFixed(currency === 'USDT' ? 4 : 2) 
+    : (currency === 'USDT' ? '0.0000' : '0.00');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -80,7 +84,7 @@ export const PaymentAmountInput: React.FC<PaymentAmountInputProps> = ({
           onChange={handleInputChange}
           disabled={disabled}
           className="w-full bg-gray-950 border border-gray-800 text-white rounded-xl px-4 py-3.5 pl-11 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium text-lg placeholder-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          placeholder={currency === 'USDT' ? '0.00' : '0'}
+          placeholder={currency === 'USDT' ? '0.0000' : '0'}
           required
         />
         <span className="absolute left-4 top-4 text-gray-400 font-semibold text-lg">

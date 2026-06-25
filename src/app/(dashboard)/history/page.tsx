@@ -154,7 +154,7 @@ export default function HistoryPage() {
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Type</th>
-                      <th className="px-6 py-4 font-medium">Amount (USD)</th>
+                      <th className="px-6 py-4 font-medium">Amount (USDT)</th>
                       <th className="px-6 py-4 font-medium">Amount (INR)</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Date</th>
@@ -168,8 +168,8 @@ export default function HistoryPage() {
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'
                               }`}>
                               {tx.transactionType === 'DEPOSIT'
-                                ? <ArrowDownToLine className="w-3 h-3" />
-                                : <ArrowUpFromLine className="w-3 h-3" />}
+                                ? <ArrowUpFromLine className="w-3 h-3" />
+                                : <ArrowDownToLine className="w-3 h-3" />}
                               {tx.transactionType}
                             </span>
                             {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -182,7 +182,7 @@ export default function HistoryPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-medium text-white">${tx.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium text-white">${tx.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300">{tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
@@ -229,8 +229,8 @@ export default function HistoryPage() {
                       <div className="flex flex-col gap-1">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${tx.transactionType === 'DEPOSIT' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
                           {tx.transactionType === 'DEPOSIT'
-                            ? <ArrowDownToLine className="w-3 h-3" />
-                            : <ArrowUpFromLine className="w-3 h-3" />}
+                            ? <ArrowUpFromLine className="w-3 h-3" />
+                            : <ArrowDownToLine className="w-3 h-3" />}
                           {tx.transactionType}
                         </span>
                         {tx.transactionType === 'WITHDRAWAL' && tx.method && (
@@ -248,8 +248,8 @@ export default function HistoryPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">USD Amount</p>
-                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">USDT Amount</p>
+                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(4)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Value</p>
@@ -299,7 +299,7 @@ export default function HistoryPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
           {deposits.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              <ArrowDownToLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
+              <ArrowUpFromLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
               <p className="text-lg font-medium">No deposits yet</p>
               <p className="text-sm mt-1">Submit a crypto deposit to get started</p>
             </div>
@@ -311,7 +311,7 @@ export default function HistoryPage() {
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Tx Hash</th>
-                      <th className="px-6 py-4 font-medium">USD</th>
+                      <th className="px-6 py-4 font-medium">USDT</th>
                       <th className="px-6 py-4 font-medium">INR Value</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Date</th>
@@ -321,7 +321,7 @@ export default function HistoryPage() {
                     {deposits.map((d) => (
                       <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{d.txHash}</td>
-                        <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4">
                           <span className={statusBadge(d.status)}>
@@ -350,8 +350,8 @@ export default function HistoryPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">USD Amount</p>
-                        <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">USDT Amount</p>
+                        <p className="font-bold text-white font-mono">${d.amountUSD.toFixed(4)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Value</p>
@@ -380,7 +380,7 @@ export default function HistoryPage() {
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
           {withdrawals.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              <ArrowUpFromLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
+              <ArrowDownToLine className="w-16 h-16 mx-auto mb-4 text-gray-700" />
               <p className="text-lg font-medium">No withdrawals yet</p>
               <p className="text-sm mt-1">Request a withdrawal to see it here</p>
             </div>
@@ -393,7 +393,7 @@ export default function HistoryPage() {
                     <tr>
                       <th className="px-6 py-4 font-medium">Method</th>
                       <th className="px-6 py-4 font-medium">Holder</th>
-                      <th className="px-6 py-4 font-medium">USD</th>
+                      <th className="px-6 py-4 font-medium">USDT</th>
                       <th className="px-6 py-4 font-medium">INR</th>
                       <th className="px-6 py-4 font-medium">UTR / TxID</th>
                       <th className="px-6 py-4 font-medium">Status</th>
@@ -413,7 +413,7 @@ export default function HistoryPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
-                        <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{w.utr || '—'}</td>
                         <td className="px-6 py-4">
@@ -461,8 +461,8 @@ export default function HistoryPage() {
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <p className="text-[10px] text-gray-500">USD Amount</p>
-                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(2)}</p>
+                        <p className="text-[10px] text-gray-500">USDT Amount</p>
+                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(4)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Amount</p>
