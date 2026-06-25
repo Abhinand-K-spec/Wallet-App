@@ -26,8 +26,6 @@ interface Withdrawal {
 const statusBadge = (status: string) => {
   const styles: Record<string, string> = {
     PENDING: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    CANCEL_REQUESTED: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-    CANCELLED: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
     APPROVED: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
     REJECTED: 'bg-red-500/10 text-red-400 border-red-500/30',
     PAID: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -186,7 +184,7 @@ export default function AdminWithdrawalsPage() {
     };
   }, [refreshKey]);
 
-  const handleAction = async (withdrawalId: string, action: 'APPROVED' | 'REJECTED' | 'PAID' | 'CANCELLED' | 'REJECT_CANCEL') => {
+  const handleAction = async (withdrawalId: string, action: 'APPROVED' | 'REJECTED' | 'PAID') => {
     if (action === 'PAID' && !utrInputs[withdrawalId]) {
       const isUsdt = withdrawals.find(w => w.id === withdrawalId)?.method === 'USDT';
       dispatch(addToast({ message: `Please enter a ${isUsdt ? 'transaction hash' : 'UTR number'} before marking as paid.`, type: 'error' }));
@@ -202,8 +200,6 @@ export default function AdminWithdrawalsPage() {
       if (action === 'APPROVED') actionLabel = 'approved';
       else if (action === 'REJECTED') actionLabel = 'rejected';
       else if (action === 'PAID') actionLabel = 'paid';
-      else if (action === 'CANCELLED') actionLabel = 'cancellation approved';
-      else if (action === 'REJECT_CANCEL') actionLabel = 'cancellation rejected';
 
       dispatch(addToast({ message: `Withdrawal successfully ${actionLabel}!`, type: 'success' }));
       setRefreshKey(prev => prev + 1);
@@ -222,9 +218,9 @@ export default function AdminWithdrawalsPage() {
     );
   }
 
-  const pendingWithdrawals = withdrawals.filter(w => ['PENDING', 'CANCEL_REQUESTED'].includes(w.status));
+  const pendingWithdrawals = withdrawals.filter(w => w.status === 'PENDING');
   const approvedWithdrawals = withdrawals.filter(w => w.status === 'APPROVED');
-  const completedWithdrawals = withdrawals.filter(w => ['PAID', 'REJECTED', 'CANCELLED'].includes(w.status));
+  const completedWithdrawals = withdrawals.filter(w => ['PAID', 'REJECTED'].includes(w.status));
   const completedTotalPages = Math.ceil(completedWithdrawals.length / completedLimit);
   const paginatedCompletedWithdrawals = completedWithdrawals.slice(
     (completedPage - 1) * completedLimit,
@@ -286,9 +282,6 @@ export default function AdminWithdrawalsPage() {
                             }`}>
                               {w.method === 'USDT' ? 'USDT Wallet Transfer' : 'Bank Transfer'}
                             </span>
-                            {w.status === 'CANCEL_REQUESTED' && (
-                              <span className={statusBadge(w.status)}>Cancel Requested</span>
-                            )}
                             {w.downloaded && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-gray-800/80 text-gray-400 border-gray-700/80">
                                 Already Downloaded
@@ -347,45 +340,22 @@ export default function AdminWithdrawalsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      {w.status === 'CANCEL_REQUESTED' ? (
-                        <>
-                          <button
-                            onClick={() => handleAction(w.id, 'CANCELLED')}
-                            disabled={actionLoading === w.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            {actionLoading === w.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                            Approve Cancel
-                          </button>
-                          <button
-                            onClick={() => handleAction(w.id, 'REJECT_CANCEL')}
-                            disabled={actionLoading === w.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleAction(w.id, 'APPROVED')}
-                            disabled={actionLoading === w.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            {actionLoading === w.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleAction(w.id, 'REJECTED')}
-                            disabled={actionLoading === w.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => handleAction(w.id, 'APPROVED')}
+                        disabled={actionLoading === w.id}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        {actionLoading === w.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleAction(w.id, 'REJECTED')}
+                        disabled={actionLoading === w.id}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Reject
+                      </button>
                     </div>
                   </div>
                 </div>

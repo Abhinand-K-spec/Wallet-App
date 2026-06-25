@@ -22,8 +22,6 @@ interface Deposit {
 const statusBadge = (status: string) => {
   const styles: Record<string, string> = {
     PENDING: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    CANCEL_REQUESTED: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-    CANCELLED: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
     APPROVED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     REJECTED: 'bg-red-500/10 text-red-400 border-red-500/30',
   };
@@ -292,7 +290,7 @@ export default function AdminDepositsPage() {
     };
   }, [refreshKey]);
 
-  const handleAction = async (depositId: string, action: 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'REJECT_CANCEL') => {
+  const handleAction = async (depositId: string, action: 'APPROVED' | 'REJECTED') => {
     setActionLoading(depositId);
     try {
       await api.post(`/admin/deposit/${depositId}/verify`, {
@@ -301,8 +299,6 @@ export default function AdminDepositsPage() {
       let actionLabel = '';
       if (action === 'APPROVED') actionLabel = 'approved';
       else if (action === 'REJECTED') actionLabel = 'rejected';
-      else if (action === 'CANCELLED') actionLabel = 'cancellation approved';
-      else if (action === 'REJECT_CANCEL') actionLabel = 'cancellation rejected';
 
       dispatch(addToast({ message: `Deposit ${actionLabel} successfully!`, type: 'success' }));
       setRefreshKey(prev => prev + 1);
@@ -317,8 +313,8 @@ export default function AdminDepositsPage() {
 
   if (loading) return <div className="text-gray-400 p-8 font-sans">Loading deposits...</div>;
 
-  const pendingDeposits = deposits.filter(d => ['PENDING', 'CANCEL_REQUESTED'].includes(d.status));
-  const processedDeposits = deposits.filter(d => !['PENDING', 'CANCEL_REQUESTED'].includes(d.status));
+  const pendingDeposits = deposits.filter(d => d.status === 'PENDING');
+  const processedDeposits = deposits.filter(d => d.status !== 'PENDING');
   const processedTotalPages = Math.ceil(processedDeposits.length / processedLimit);
   const paginatedProcessedDeposits = processedDeposits.slice(
     (processedPage - 1) * processedLimit,
@@ -356,9 +352,6 @@ export default function AdminDepositsPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="text-sm text-gray-400">User</p>
-                            {deposit.status === 'CANCEL_REQUESTED' && (
-                              <span className={statusBadge(deposit.status)}>Cancel Requested</span>
-                            )}
                           </div>
                           <p className="text-white font-medium">{deposit.user.email} <span className="text-gray-500 text-xs">({deposit.user.userId})</span></p>
                         </div>
@@ -380,45 +373,22 @@ export default function AdminDepositsPage() {
                     </div>
 
                     <div className="flex gap-2 shrink-0">
-                      {deposit.status === 'CANCEL_REQUESTED' ? (
-                        <>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'CANCELLED')}
-                            disabled={actionLoading === deposit.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            {actionLoading === deposit.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                            Approve Cancel
-                          </button>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'REJECT_CANCEL')}
-                            disabled={actionLoading === deposit.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'APPROVED')}
-                            disabled={actionLoading === deposit.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            {actionLoading === deposit.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleAction(deposit.id, 'REJECTED')}
-                            disabled={actionLoading === deposit.id}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
-                          >
-                            <XCircle className="w-4 h-4" />
-                            Reject
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => handleAction(deposit.id, 'APPROVED')}
+                        disabled={actionLoading === deposit.id}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        {actionLoading === deposit.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleAction(deposit.id, 'REJECTED')}
+                        disabled={actionLoading === deposit.id}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Reject
+                      </button>
                     </div>
                   </div>
                   <BlockchainStatusChecker depositId={deposit.id} />

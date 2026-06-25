@@ -36,12 +36,10 @@ const statusIcon = (status: string) => {
     case 'SUCCESS':
       return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
     case 'PENDING':
-    case 'CANCEL_REQUESTED':
       return <Clock className="w-4 h-4 text-amber-400" />;
     case 'REJECTED':
     case 'FAILED':
     case 'EXPIRED':
-    case 'CANCELLED':
       return <XCircle className="w-4 h-4 text-red-400" />;
     default:
       return <Activity className="w-4 h-4 text-gray-400" />;
@@ -51,8 +49,6 @@ const statusIcon = (status: string) => {
 const statusBadge = (status: string) => {
   const styles: Record<string, string> = {
     PENDING: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    CANCEL_REQUESTED: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-    CANCELLED: 'bg-gray-500/10 text-gray-400 border-gray-500/30',
     APPROVED: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
     COMPLETED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     SUCCESS: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -75,25 +71,6 @@ export default function HistoryPage() {
   const itemsPerPage = 10;
 
   const dispatch = useDispatch();
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
-
-  const handleCancel = async (type: 'DEPOSIT' | 'WITHDRAWAL', id: string) => {
-    if (!window.confirm('Are you sure you want to cancel this request?')) return;
-    setCancellingId(id);
-    try {
-      await api.post('/user/request/cancel', { type, id });
-      dispatch(addToast({ message: 'Cancellation request submitted to admin.', type: 'success' }));
-      // Refresh data
-      const res = await api.get('/user/transactions');
-      setDeposits(res.data.deposits);
-      setWithdrawals(res.data.withdrawals);
-    } catch (err: any) {
-      const msg = err.response?.data?.error || 'Failed to submit cancellation request';
-      dispatch(addToast({ message: msg, type: 'error' }));
-    } finally {
-      setCancellingId(null);
-    }
-  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -199,7 +176,6 @@ export default function HistoryPage() {
                       <th className="px-6 py-4 font-medium">Amount (INR)</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Date</th>
-                      <th className="px-6 py-4 font-medium">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -255,18 +231,6 @@ export default function HistoryPage() {
                             <div className="text-[10px] text-blue-400 font-semibold mt-1">
                               Approved: {new Date(tx.updatedAt).toLocaleString()}
                             </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {tx.status === 'PENDING' && (
-                            <button
-                              onClick={() => handleCancel(tx.transactionType as 'DEPOSIT' | 'WITHDRAWAL', tx.id)}
-                              disabled={cancellingId === tx.id}
-                              className="text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
-                            >
-                              {cancellingId === tx.id && <Loader2 className="w-3 h-3 animate-spin" />}
-                              Cancel
-                            </button>
                           )}
                         </td>
                       </tr>
@@ -340,16 +304,6 @@ export default function HistoryPage() {
                         </div>
                       )}
                     </div>
-                    {tx.status === 'PENDING' && (
-                      <button
-                        onClick={() => handleCancel(tx.transactionType as 'DEPOSIT' | 'WITHDRAWAL', tx.id)}
-                        disabled={cancellingId === tx.id}
-                        className="w-full text-center py-2 text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1 mt-2"
-                      >
-                        {cancellingId === tx.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        Cancel Request
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
@@ -404,7 +358,6 @@ export default function HistoryPage() {
                       <th className="px-6 py-4 font-medium">INR Value</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Date</th>
-                      <th className="px-6 py-4 font-medium">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -420,18 +373,6 @@ export default function HistoryPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleString()}</td>
-                        <td className="px-6 py-4">
-                          {d.status === 'PENDING' && (
-                            <button
-                              onClick={() => handleCancel('DEPOSIT', d.id)}
-                              disabled={cancellingId === d.id}
-                              className="text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
-                            >
-                              {cancellingId === d.id && <Loader2 className="w-3 h-3 animate-spin" />}
-                              Cancel
-                            </button>
-                          )}
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -469,19 +410,10 @@ export default function HistoryPage() {
                       <span>Date submitted</span>
                       <span>{new Date(d.createdAt).toLocaleString()}</span>
                     </div>
-                    {d.status === 'PENDING' && (
-                      <button
-                        onClick={() => handleCancel('DEPOSIT', d.id)}
-                        disabled={cancellingId === d.id}
-                        className="w-full text-center py-2 text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1 mt-2"
-                      >
-                        {cancellingId === d.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        Cancel Request
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
+
 
               {/* Pagination Controls */}
               {totalPagesDeposits > 1 && (
@@ -536,7 +468,6 @@ export default function HistoryPage() {
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Requested</th>
                       <th className="px-6 py-4 font-medium">Paid / Processed</th>
-                      <th className="px-6 py-4 font-medium">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -576,18 +507,6 @@ export default function HistoryPage() {
                         <td className="px-6 py-4 text-gray-500 text-xs">
                           {w.status === 'PENDING' ? '—' : new Date(w.updatedAt).toLocaleString()}
                         </td>
-                        <td className="px-6 py-4">
-                          {w.status === 'PENDING' && (
-                            <button
-                              onClick={() => handleCancel('WITHDRAWAL', w.id)}
-                              disabled={cancellingId === w.id}
-                              className="text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
-                            >
-                              {cancellingId === w.id && <Loader2 className="w-3 h-3 animate-spin" />}
-                              Cancel
-                            </button>
-                          )}
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -619,7 +538,7 @@ export default function HistoryPage() {
                         <p className="font-bold text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
                       </div>
                     </div>
-                    <div className="text-xs text-gray-400 space-y-1 bg-gray-950 p-2.5 rounded border border-gray-850">
+                    <div className="text-xs text-gray-400 space-y-1 bg-gray-950 p-2.5 rounded border border-gray-855">
                       <div className="flex justify-between">
                         <span className="text-[10px] text-gray-500">Beneficiary:</span>
                         <span className="font-medium text-white">{w.accountHolder}</span>
@@ -648,16 +567,6 @@ export default function HistoryPage() {
                         </div>
                       )}
                     </div>
-                    {w.status === 'PENDING' && (
-                      <button
-                        onClick={() => handleCancel('WITHDRAWAL', w.id)}
-                        disabled={cancellingId === w.id}
-                        className="w-full text-center py-2 text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer border border-red-500/20 hover:border-red-500/40 bg-red-500/5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1 mt-2"
-                      >
-                        {cancellingId === w.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        Cancel Request
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
