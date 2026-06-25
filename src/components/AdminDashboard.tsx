@@ -176,7 +176,7 @@ const AdminDashboard = () => {
                 <div>
                   <label className="text-xs text-gray-500 font-medium block mb-1">Address</label>
                   <div className="flex items-center gap-2 bg-gray-950 px-3 py-2 rounded-xl border border-gray-800/80">
-                    <span className="text-sm text-gray-300 font-mono truncate flex-1">
+                    <span className="text-xs text-gray-300 font-mono break-all select-all flex-1" title={stats.walletDetails.address}>
                       {stats.walletDetails.address}
                     </span>
                     <button

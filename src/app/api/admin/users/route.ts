@@ -102,7 +102,14 @@ export async function GET(request: NextRequest) {
         return sum + (w.amount_usd || 0) + fee;
       }, 0);
       const balanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
-      const balanceINR = balanceUSD * rate;
+
+      const totalDepositsINR = approvedDeposits.reduce((sum: number, d: any) => sum + (d.equivalent_inr || 0), 0);
+      const totalWithdrawalsINR = approvedWithdrawals.reduce((sum: number, w: any) => {
+        const rateAtWithdrawal = w.amount_usd > 0 ? (w.amount_inr / w.amount_usd) : rate;
+        const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
+        return sum + (w.amount_inr || 0) + feeINR;
+      }, 0);
+      const balanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR);
 
       const depositRates = Array.from(new Set(
         approvedDeposits

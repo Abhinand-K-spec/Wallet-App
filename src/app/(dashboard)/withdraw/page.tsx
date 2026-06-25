@@ -42,9 +42,8 @@ export default function WithdrawPage() {
 
   const { exchangeRate: inrRate, rateLoading } = useExchangeRate();
   const [balanceUSD, setBalanceUSD] = useState<number>(0);
+  const [balanceINR, setBalanceINR] = useState<number>(0);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
-
-  const balanceINR = balanceUSD * inrRate;
 
   const isExceeded = method === 'BANK'
     ? (amountINR && !isNaN(parseFloat(amountINR)) && parseFloat(amountINR) > balanceINR)
@@ -54,6 +53,14 @@ export default function WithdrawPage() {
     try {
       const res = await api.get('/user/profile');
       const user = res.data;
+
+      // Email verification check
+      if (!user.email_verified) {
+        dispatch(addToast({ message: 'Email verification is required to withdraw funds.', type: 'info' }));
+        router.replace('/dashboard');
+        return;
+      }
+
       const totalDepositsUSD = (user.deposits || [])
         .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
         .reduce((acc: number, d: DepositItem) => acc + d.amountUSD, 0);
@@ -64,12 +71,24 @@ export default function WithdrawPage() {
           return acc + w.amountUSD + fee;
         }, 0);
       setBalanceUSD(Math.max(0, totalDepositsUSD - totalWithdrawalsUSD));
+
+      const totalDepositsINR = (user.deposits || [])
+        .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
+        .reduce((acc: number, d: DepositItem) => acc + (d.equivalentINR || 0), 0);
+      const totalWithdrawalsINR = (user.withdrawals || [])
+        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
+        .reduce((acc: number, w: WithdrawalItem) => {
+          const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
+          const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
+          return acc + w.amountINR + feeINR;
+        }, 0);
+      setBalanceINR(Math.max(0, totalDepositsINR - totalWithdrawalsINR));
     } catch (err) {
       console.error('Failed to fetch profile/balance:', err);
     } finally {
       setBalanceLoading(false);
     }
-  }, []);
+  }, [dispatch, router, inrRate]);
 
   useEffect(() => {
     fetchProfileAndBalance();
@@ -210,6 +229,15 @@ export default function WithdrawPage() {
       setLoading(false);
     }
   };
+
+  if (balanceLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3 font-sans">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+        <p className="text-sm text-gray-500">Checking verification status...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 font-sans px-4 py-6">

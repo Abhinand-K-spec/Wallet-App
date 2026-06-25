@@ -25,6 +25,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+button, a, [role="button"], select, input {
+  touch-action: manipulation;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

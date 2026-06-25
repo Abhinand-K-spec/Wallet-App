@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowDownToLine, ArrowUpFromLine, Activity, Wallet, Plus, ArrowUpRight, History } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Activity, Wallet, Plus, ArrowUpRight, History, AlertTriangle, Loader2, X, ShieldCheck } from 'lucide-react';
 import { useExchangeRate } from '@/context/ExchangeRateContext';
 
 interface Deposit {
@@ -35,6 +37,7 @@ interface UserProfile {
   id: string;
   userId: string;
   email: string;
+  email_verified?: boolean;
   deposits: Deposit[];
   withdrawals: Withdrawal[];
   transactions: Transaction[];
@@ -55,7 +58,98 @@ const UserDashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const dispatch = useDispatch();
   const { exchangeRate: inrRate } = useExchangeRate();
+
+  // Custom OTP Verification States
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpSuccess, setOtpSuccess] = useState('');
+
+  // Countdown timer for OTP
+  useEffect(() => {
+    if (otpTimer <= 0) return;
+    const interval = setInterval(() => {
+      setOtpTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
+  const handleSendOtp = async () => {
+    setOtpError('');
+    setOtpSuccess('');
+    setOtpLoading(true);
+    try {
+      const res = await api.post('/auth/custom-send-otp');
+      setOtpTimer(30);
+      setShowOtpModal(true);
+      if (res.data.code) {
+        setOtpSuccess(`[Dev Mode] Verification code generated: ${res.data.code}`);
+      } else {
+        setOtpSuccess('Verification code sent to your email.');
+      }
+      dispatch(addToast({ message: 'Verification code sent!', type: 'success' }));
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Failed to send verification code';
+      setOtpError(msg);
+      dispatch(addToast({ message: msg, type: 'error' }));
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOtpError('');
+    setOtpSuccess('');
+    setOtpLoading(true);
+
+    const code = otpValues.join('');
+    if (code.length < 6) {
+      setOtpError('Please enter the 6-digit code.');
+      setOtpLoading(false);
+      return;
+    }
+
+    try {
+      await api.post('/auth/custom-verify-otp', { code });
+      dispatch(addToast({ message: 'Email verified successfully!', type: 'success' }));
+      setShowOtpModal(false);
+      setOtpValues(['', '', '', '', '', '']);
+      
+      // Refresh profile data
+      const res = await api.get('/user/profile');
+      setProfile(res.data);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Verification failed';
+      setOtpError(msg);
+      dispatch(addToast({ message: msg, type: 'error' }));
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleOtpChange = (value: string, index: number) => {
+    if (value && isNaN(Number(value))) return;
+    const newOtpValues = [...otpValues];
+    newOtpValues[index] = value.substring(value.length - 1);
+    setOtpValues(newOtpValues);
+
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`dash-otp-${index + 1}`) as HTMLInputElement;
+      nextInput?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+      const prevInput = document.getElementById(`dash-otp-${index - 1}`) as HTMLInputElement;
+      prevInput?.focus();
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -81,18 +175,57 @@ const UserDashboard = () => {
   }
 
   const totalDepositsUSD = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + d.amountUSD, 0) || 0;
+  
+  // For Available Balance: deduct pending withdrawals as well to prevent overdraft
+  const totalWithdrawalsUSD_Available = profile?.withdrawals?.filter((w: Withdrawal) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
+    const fee = w.method === 'USDT' ? 0.5 : 0;
+    return acc + w.amountUSD + fee;
+  }, 0) || 0;
+  const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD_Available);
+
+  const totalDepositsINR = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + (d.equivalentINR || 0), 0) || 0;
+  const totalWithdrawalsINR = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
+    const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
+    const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
+    return acc + w.amountINR + feeINR;
+  }, 0) || 0;
+
+  const totalWithdrawalsINR_Available = profile?.withdrawals?.filter((w: Withdrawal) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
+    const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
+    const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
+    return acc + w.amountINR + feeINR;
+  }, 0) || 0;
+  const availableBalanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR_Available);
+
+  // Total withdrawals displayed in ledger metrics cards (only APPROVED and PAID)
   const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
     const fee = w.method === 'USDT' ? 0.5 : 0;
     return acc + w.amountUSD + fee;
   }, 0) || 0;
-  const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
-
-  const totalDepositsINR = totalDepositsUSD * inrRate;
-  const totalWithdrawalsINR = totalWithdrawalsUSD * inrRate;
-  const availableBalanceINR = availableBalanceUSD * inrRate;
 
   return (
     <div className="space-y-8 font-sans">
+      {/* Email Verification Banner */}
+      {!profile?.email_verified && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg animate-fade-in">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-bold text-white">Email Verification Required</h4>
+              <p className="text-xs text-gray-400 mt-1">Please verify your email address to enable deposits and withdrawals on your secure wallet.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSendOtp}
+            disabled={otpLoading}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/50 text-gray-950 text-xs font-bold rounded-xl transition-all active:scale-[0.98] shrink-0 cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-500/10"
+          >
+            {otpLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            Verify Email
+          </button>
+        </div>
+      )}
+
       <div>
         <h1 className="text-2xl font-black text-white tracking-tight">Overview</h1>
         <p className="text-gray-400 text-sm mt-1">Real-time status of your assets and deposits</p>
@@ -146,8 +279,17 @@ const UserDashboard = () => {
           {/* Quick Action Grid */}
           <div className="grid grid-cols-3 gap-4">
             <button
-              onClick={() => router.push('/deposit')}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in"
+              onClick={() => {
+                if (!profile?.email_verified) {
+                  dispatch(addToast({ message: 'Please verify your email address to access deposits.', type: 'info' }));
+                  handleSendOtp();
+                } else {
+                  router.push('/deposit');
+                }
+              }}
+              className={`w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in ${
+                !profile?.email_verified ? 'opacity-60' : ''
+              }`}
             >
               <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
                 <Plus className="w-5 h-5" />
@@ -156,8 +298,17 @@ const UserDashboard = () => {
             </button>
 
             <button
-              onClick={() => router.push('/withdraw')}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in"
+              onClick={() => {
+                if (!profile?.email_verified) {
+                  dispatch(addToast({ message: 'Please verify your email address to access withdrawals.', type: 'info' }));
+                  handleSendOtp();
+                } else {
+                  router.push('/withdraw');
+                }
+              }}
+              className={`w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in ${
+                !profile?.email_verified ? 'opacity-60' : ''
+              }`}
             >
               <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
                 <ArrowUpRight className="w-5 h-5" />
@@ -309,6 +460,89 @@ const UserDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/75 animate-fade-in" onClick={() => setShowOtpModal(false)} />
+
+          {/* Modal Container */}
+          <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl z-50 animate-fade-in-up">
+            <button
+              onClick={() => setShowOtpModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-white bg-gray-800/50 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-white tracking-tight">Verify Your Email</h3>
+              <p className="text-xs text-gray-400 mt-2 leading-relaxed font-sans">
+                Enter the 6-digit confirmation code generated for <br />
+                <span className="text-indigo-400 font-semibold font-mono">{profile?.email}</span>
+              </p>
+            </div>
+
+            {otpError && (
+              <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
+                <AlertTriangle className="w-4.5 h-4.5 text-red-400 shrink-0 mt-0.5" />
+                <p className="text-red-400 text-xs font-semibold leading-relaxed">{otpError}</p>
+              </div>
+            )}
+
+            {otpSuccess && (
+              <div className="mb-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3 flex items-start gap-2">
+                <ShieldCheck className="w-4.5 h-4.5 text-indigo-400 shrink-0 mt-0.5" />
+                <p className="text-indigo-400 text-xs font-semibold leading-relaxed break-all font-mono">{otpSuccess}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyOtp} className="space-y-6">
+              <div className="flex justify-between gap-2">
+                {otpValues.map((val, idx) => (
+                  <input
+                    key={idx}
+                    id={`dash-otp-${idx}`}
+                    type="text"
+                    pattern="\d*"
+                    maxLength={1}
+                    value={val}
+                    onChange={(e) => handleOtpChange(e.target.value, idx)}
+                    onKeyDown={(e) => handleKeyDown(e, idx)}
+                    className="w-12 h-14 bg-gray-950 border border-gray-800 focus:border-indigo-500 text-center text-xl font-bold font-mono text-white rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/15 transition-all"
+                    required
+                  />
+                ))}
+              </div>
+
+              <button
+                type="submit"
+                disabled={otpLoading || otpValues.join('').length < 6}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl py-3.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-[0.98]"
+              >
+                {otpLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirm Verification'}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-500">
+                Didn't receive the code?{' '}
+                {otpTimer > 0 ? (
+                  <span className="text-gray-400 font-semibold font-mono">Resend in {otpTimer}s</span>
+                ) : (
+                  <button
+                    onClick={handleSendOtp}
+                    className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors cursor-pointer"
+                  >
+                    Resend Code
+                  </button>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

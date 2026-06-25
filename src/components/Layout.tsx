@@ -41,8 +41,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-screen bg-gray-950 flex text-gray-100 relative overflow-hidden font-sans">
       {/* Background glow effects */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none hidden md:block" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none hidden md:block" />
 
       {/* Sidebar (Desktop) */}
       <aside className="w-64 bg-gray-900/60 backdrop-blur-xl border-r border-gray-800/80 flex flex-col hidden md:flex shrink-0 relative z-30">
@@ -181,7 +181,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
         {/* Mobile Header */}
-        <header className="md:hidden h-16 border-b border-gray-800/80 bg-gray-900/60 backdrop-blur-xl flex items-center justify-between px-4 z-40 shrink-0">
+        <header className="md:hidden h-16 border-b border-gray-800/80 bg-gray-900/95 flex items-center justify-between px-4 z-40 shrink-0">
           <div className="flex items-center gap-2">
             <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800/50 mr-1 cursor-pointer">
               <Menu className="w-6 h-6" />

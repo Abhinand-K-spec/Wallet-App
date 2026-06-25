@@ -31,6 +31,25 @@ export default function DepositPage() {
   const [walletAddress, setWalletAddress] = useState('Loading address...');
   const { exchangeRate, rateLoading: isRateFetching } = useExchangeRate();
   const [copied, setCopied] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Email verification check on mount
+  useEffect(() => {
+    const checkVerification = async () => {
+      try {
+        const res = await api.get('/user/profile');
+        if (!res.data.email_verified) {
+          dispatch(addToast({ message: 'Email verification is required to deposit funds.', type: 'info' }));
+          router.replace('/dashboard');
+        }
+      } catch (err) {
+        console.error('Failed to verify profile status:', err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    checkVerification();
+  }, [router, dispatch]);
 
   // Fetch Wallet Address
   useEffect(() => {
@@ -57,16 +76,13 @@ export default function DepositPage() {
     }
   };
 
-  // Access QR from public folder (tron_qr.jpeg)
-  const qrImageUrl = walletAddress && walletAddress !== 'Loading address...' && walletAddress !== 'Error fetching address'
-    ? '/tron_qr.jpeg'
-    : '';
-
   // Generate deep link for Trust Wallet (TRC20 USDT)
   const isTron = walletAddress.startsWith('T');
   const qrPayload = isTron
     ? `https://link.trustwallet.com/send?asset=c195_tTR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&address=${walletAddress}`
     : `https://link.trustwallet.com/send?address=${walletAddress}`;
+
+  const qrImageUrl = walletAddress && walletAddress !== 'Loading address...' && walletAddress !== 'Error fetching address' ? '/tron_qr.jpeg' : '';
 
   // Form submission handler
   const handleSubmit = async (e: FormEvent) => {
@@ -115,6 +131,15 @@ export default function DepositPage() {
   // Calculate equivalent INR
   const amountNum = parseFloat(amountUSD);
   const equivalentINR = !isNaN(amountNum) ? (amountNum * exchangeRate).toFixed(2) : '0.00';
+
+  if (profileLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3 font-sans">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+        <p className="text-sm text-gray-500">Checking verification status...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 px-4 py-6 font-sans">

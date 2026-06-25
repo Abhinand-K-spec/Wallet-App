@@ -98,6 +98,7 @@ export async function GET() {
       email: profile.email,
       role: profile.role,
       status: profile.status,
+      email_verified: profile.email_verified,
       createdAt: profile.created_at,
       updatedAt: profile.updated_at,
       deposits: (depositsRes.data || []).map(mapDeposit),

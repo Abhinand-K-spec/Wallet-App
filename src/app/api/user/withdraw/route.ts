@@ -40,8 +40,14 @@ export async function POST(request: Request) {
       .maybeSingle();
     const rate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
 
-    // Available balance in INR calculated dynamically based on current rate
-    const availableBalanceINR = availableBalanceUSD * rate;
+    // Available balance in INR calculated based on locked historical rates
+    const totalDepositsINR = deposits.reduce((acc, d) => acc + (d.equivalent_inr || 0), 0);
+    const totalWithdrawalsINR = withdrawals.reduce((acc, w) => {
+      const rateAtWithdrawal = w.amount_usd > 0 ? (w.amount_inr / w.amount_usd) : rate;
+      const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
+      return acc + w.amount_inr + feeINR;
+    }, 0);
+    const availableBalanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR);
 
     let finalAmountUSD = 0;
     let finalAmountINR = 0;
