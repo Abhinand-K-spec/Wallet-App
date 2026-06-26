@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowDownToLine, ArrowUpFromLine, Activity, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Activity, Clock, CheckCircle2, XCircle, Loader2, FileText } from 'lucide-react';
+import UserPaymentProofModal from '@/components/UserPaymentProofModal';
 
 interface Deposit {
   id: string;
@@ -68,6 +69,8 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
   const itemsPerPage = 10;
 
   const dispatch = useDispatch();
@@ -218,6 +221,17 @@ export default function HistoryPage() {
                                 TxID/UTR: {tx.utr}
                               </span>
                             )}
+                            {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                               <button
+                                 onClick={() => {
+                                   setSelectedRequestId(tx.id);
+                                   setIsProofModalOpen(true);
+                                 }}
+                                 className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 mt-1.5 cursor-pointer transition-colors w-fit border border-indigo-500/20 bg-indigo-500/5 px-2 py-0.5 rounded"
+                               >
+                                 <FileText className="w-3 h-3" /> View Receipt
+                               </button>
+                             )}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-gray-500">
@@ -277,9 +291,20 @@ export default function HistoryPage() {
                       </div>
                     </div>
                     {tx.utr && (
-                      <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-850 font-mono text-indigo-400 break-all select-all">
+                      <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-855 font-mono text-indigo-400 break-all select-all">
                         TxID/UTR: {tx.utr}
                       </div>
+                    )}
+                    {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                      <button
+                        onClick={() => {
+                          setSelectedRequestId(tx.id);
+                          setIsProofModalOpen(true);
+                        }}
+                        className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center gap-1 mt-2 cursor-pointer transition-colors border border-indigo-500/20 bg-indigo-500/5 px-3 py-1.5 rounded-lg w-full"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> View Receipt
+                      </button>
                     )}
                     {tx.status === 'APPROVED' && tx.transactionType === 'WITHDRAWAL' && (
                       <p className="text-[9px] text-blue-400 font-medium">
@@ -598,6 +623,17 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
+      )}
+
+      {selectedRequestId && (
+        <UserPaymentProofModal
+          isOpen={isProofModalOpen}
+          onClose={() => {
+            setIsProofModalOpen(false);
+            setSelectedRequestId(null);
+          }}
+          paymentRequestId={selectedRequestId}
+        />
       )}
     </div>
   );

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, CreditCard, Loader2, Copy, Check, Download, ChevronDown } from 'lucide-react';
+import { ArrowUpFromLine, CheckCircle2, XCircle, Clock, CreditCard, Loader2, Copy, Check, Download, ChevronDown, FileText } from 'lucide-react';
+import PaymentProofModal from '@/components/PaymentProofModal';
 
 interface Withdrawal {
   id: string;
@@ -43,6 +44,8 @@ export default function AdminWithdrawalsPage() {
   const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
   const [completedPage, setCompletedPage] = useState(1);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
   const completedLimit = 10;
   
   const dispatch = useDispatch();
@@ -456,7 +459,7 @@ export default function AdminWithdrawalsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-end gap-3 shrink-0">
+                    <div className="flex items-end gap-3 shrink-0 flex-wrap">
                       <div>
                         <label className="block text-xs text-gray-400 mb-1">
                           {w.method === 'USDT' ? 'TxID / Hash' : 'UTR Number'}
@@ -472,10 +475,22 @@ export default function AdminWithdrawalsPage() {
                       <button
                         onClick={() => handleAction(w.id, 'PAID')}
                         disabled={actionLoading === w.id}
-                        className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
                       >
-                        {actionLoading === w.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                        Mark Paid
+                        {actionLoading === w.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                        <CheckCircle2 className="w-4 h-4" />
+                        Mark Paid Normally
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedWithdrawal(w);
+                          setIsProofModalOpen(true);
+                        }}
+                        disabled={actionLoading === w.id}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Mark Paid with Receipt
                       </button>
                     </div>
                   </div>
@@ -500,9 +515,10 @@ export default function AdminWithdrawalsPage() {
                       <th className="px-6 py-4 font-medium">INR</th>
                       <th className="px-6 py-4 font-medium">Payout Info</th>
                       <th className="px-6 py-4 font-medium">UTR / TxID</th>
-                      <th className="px-6 py-4 font-medium">Status</th>
-                      <th className="px-6 py-4 font-medium">Requested</th>
-                      <th className="px-6 py-4 font-medium">Paid / Processed</th>
+                      <th className="px-6 py-4 font-medium font-sans">Status</th>
+                      <th className="px-6 py-4 font-medium font-sans">Requested</th>
+                      <th className="px-6 py-4 font-medium font-sans">Paid / Processed</th>
+                      <th className="px-6 py-4 font-medium text-right font-sans">Receipt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -533,9 +549,23 @@ export default function AdminWithdrawalsPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-indigo-400 font-mono text-xs break-all select-all">{w.utr || '—'}</td>
-                        <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
+                         <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
                         <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
                         <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.updatedAt).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right">
+                          {w.status === 'PAID' && (
+                            <button
+                              onClick={() => {
+                                setSelectedWithdrawal(w);
+                                setIsProofModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              Upload/View Proof
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -611,6 +641,20 @@ export default function AdminWithdrawalsPage() {
                         <span>{new Date(w.updatedAt).toLocaleString()}</span>
                       </div>
                     </div>
+                    {w.status === 'PAID' && (
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            setSelectedWithdrawal(w);
+                            setIsProofModalOpen(true);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Upload/View Receipt
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -684,6 +728,26 @@ export default function AdminWithdrawalsPage() {
               </div>
             </div>
           </div>
+        )}
+        
+        {selectedWithdrawal && (
+          <PaymentProofModal
+            isOpen={isProofModalOpen}
+            onClose={() => {
+              setIsProofModalOpen(false);
+              setSelectedWithdrawal(null);
+            }}
+            onSuccess={() => {
+              setRefreshKey(prev => prev + 1);
+            }}
+            paymentRequestId={selectedWithdrawal.id}
+            amountUSD={selectedWithdrawal.amountUSD}
+            currency={selectedWithdrawal.method === 'USDT' ? 'USDT' : 'INR'}
+            type="WITHDRAWAL"
+            walletAddress={selectedWithdrawal.walletAddress || undefined}
+            accountNumber={selectedWithdrawal.accountNumber || undefined}
+            utr={utrInputs[selectedWithdrawal.id] || undefined}
+          />
         )}
       </div>
   );

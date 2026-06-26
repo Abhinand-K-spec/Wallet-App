@@ -5,7 +5,8 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ShieldAlert, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ShieldAlert, AlertTriangle, RefreshCw, FileText } from 'lucide-react';
+import PaymentProofModal from '@/components/PaymentProofModal';
 
 interface Deposit {
   id: string;
@@ -261,6 +262,8 @@ export default function AdminDepositsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [processedPage, setProcessedPage] = useState(1);
+  const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
   const processedLimit = 10;
   const dispatch = useDispatch();
 
@@ -372,19 +375,31 @@ export default function AdminDepositsPage() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2 shrink-0">
+                    <div className="flex flex-wrap gap-2 shrink-0">
                       <button
                         onClick={() => handleAction(deposit.id, 'APPROVED')}
                         disabled={actionLoading === deposit.id}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
                       >
-                        {actionLoading === deposit.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                        Approve
+                        {actionLoading === deposit.id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                        <CheckCircle2 className="w-4 h-4" />
+                        Approve Normally
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDeposit(deposit);
+                          setIsProofModalOpen(true);
+                        }}
+                        disabled={actionLoading === deposit.id}
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Approve with Receipt
                       </button>
                       <button
                         onClick={() => handleAction(deposit.id, 'REJECTED')}
                         disabled={actionLoading === deposit.id}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 cursor-pointer shadow-md active:scale-[0.98]"
                       >
                         <XCircle className="w-4 h-4" />
                         Reject
@@ -414,6 +429,7 @@ export default function AdminDepositsPage() {
                       <th className="px-6 py-4 font-medium">INR Value</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Date</th>
+                      <th className="px-6 py-4 font-medium text-right">Receipt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
@@ -425,6 +441,20 @@ export default function AdminDepositsPage() {
                         <td className="px-6 py-4 text-gray-300 font-mono">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4"><span className={statusBadge(d.status)}>{d.status}</span></td>
                         <td className="px-6 py-4 text-gray-500">{new Date(d.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-right">
+                          {d.status === 'APPROVED' && (
+                            <button
+                              onClick={() => {
+                                setSelectedDeposit(d);
+                                setIsProofModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              Upload/View Proof
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -459,6 +489,20 @@ export default function AdminDepositsPage() {
                       <span>Submitted At</span>
                       <span>{new Date(d.createdAt).toLocaleString()}</span>
                     </div>
+                    {d.status === 'APPROVED' && (
+                      <div className="pt-2">
+                        <button
+                          onClick={() => {
+                            setSelectedDeposit(d);
+                            setIsProofModalOpen(true);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600 border border-indigo-500/20 text-indigo-400 hover:text-white text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Upload/View Receipt
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -489,6 +533,25 @@ export default function AdminDepositsPage() {
               )}
             </div>
           </div>
+        )}
+        
+        {selectedDeposit && (
+          <PaymentProofModal
+            isOpen={isProofModalOpen}
+            onClose={() => {
+              setIsProofModalOpen(false);
+              setSelectedDeposit(null);
+            }}
+            onSuccess={() => {
+              setRefreshKey(prev => prev + 1);
+            }}
+            paymentRequestId={selectedDeposit.id}
+            amountUSD={selectedDeposit.amountUSD}
+            currency="USDT"
+            type="DEPOSIT"
+            walletAddress={selectedDeposit.walletAddress || undefined}
+            utr={selectedDeposit.txHash}
+          />
         )}
       </div>
   );
