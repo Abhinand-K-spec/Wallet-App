@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { simulateFIFO } from '@/utils/balance';
 
 function mapDeposit(d: any) {
   return {
@@ -92,6 +93,18 @@ export async function GET() {
       supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     ]);
 
+    // Fetch active exchange rate
+    const { data: rateSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'USD_INR_RATE')
+      .maybeSingle();
+    const rate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
+
+    const deposits = depositsRes.data || [];
+    const withdrawals = withdrawalsRes.data || [];
+    const { availableUSD: balanceUSD, availableINR: balanceINR } = simulateFIFO(deposits, withdrawals, rate);
+
     return NextResponse.json({
       id: profile.id,
       userId: profile.user_id,
@@ -101,8 +114,10 @@ export async function GET() {
       email_verified: profile.email_verified,
       createdAt: profile.created_at,
       updatedAt: profile.updated_at,
-      deposits: (depositsRes.data || []).map(mapDeposit),
-      withdrawals: (withdrawalsRes.data || []).map(mapWithdrawal),
+      balanceUSD,
+      balanceINR,
+      deposits: deposits.map(mapDeposit),
+      withdrawals: withdrawals.map(mapWithdrawal),
       transactions: (transactionsRes.data || []).map(mapTransaction),
     });
   } catch (error: any) {

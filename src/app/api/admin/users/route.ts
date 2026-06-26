@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { simulateFIFO } from '@/utils/balance';
 
 async function verifyAdmin(supabase: any) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -96,20 +97,7 @@ export async function GET(request: NextRequest) {
       const approvedDeposits = userDeposits.filter((d: any) => ['APPROVED', 'SUCCESS'].includes(d.status));
       const approvedWithdrawals = userWithdrawals.filter((w: any) => ['APPROVED', 'PAID'].includes(w.status));
 
-      const totalDepositsUSD = approvedDeposits.reduce((sum: number, d: any) => sum + (d.amount_usd || 0), 0);
-      const totalWithdrawalsUSD = approvedWithdrawals.reduce((sum: number, w: any) => {
-        const fee = w.method === 'USDT' ? 0.5 : 0;
-        return sum + (w.amount_usd || 0) + fee;
-      }, 0);
-      const balanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
-
-      const totalDepositsINR = approvedDeposits.reduce((sum: number, d: any) => sum + (d.equivalent_inr || 0), 0);
-      const totalWithdrawalsINR = approvedWithdrawals.reduce((sum: number, w: any) => {
-        const rateAtWithdrawal = w.amount_usd > 0 ? (w.amount_inr / w.amount_usd) : rate;
-        const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
-        return sum + (w.amount_inr || 0) + feeINR;
-      }, 0);
-      const balanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR);
+      const { availableUSD: balanceUSD, availableINR: balanceINR } = simulateFIFO(userDeposits, userWithdrawals, rate);
 
       const depositRates = Array.from(new Set(
         approvedDeposits

@@ -84,34 +84,22 @@ const UserDashboard = () => {
     );
   }
 
+  const availableBalanceUSD = (profile as any)?.balanceUSD !== undefined ? (profile as any).balanceUSD : 0;
+  const availableBalanceINR = (profile as any)?.balanceINR !== undefined ? (profile as any).balanceINR : 0;
+
   const totalDepositsUSD = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + d.amountUSD, 0) || 0;
-  
-  // For Available Balance: deduct pending withdrawals as well to prevent overdraft
-  const totalWithdrawalsUSD_Available = profile?.withdrawals?.filter((w: Withdrawal) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
-    const fee = w.method === 'USDT' ? 0.5 : 0;
-    return acc + w.amountUSD + fee;
-  }, 0) || 0;
-  const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD_Available);
-
-  const totalDepositsINR = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + (d.equivalentINR || 0), 0) || 0;
-  const totalWithdrawalsINR = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
-    const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
-    const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
-    return acc + w.amountINR + feeINR;
-  }, 0) || 0;
-
-  const totalWithdrawalsINR_Available = profile?.withdrawals?.filter((w: Withdrawal) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
-    const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
-    const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
-    return acc + w.amountINR + feeINR;
-  }, 0) || 0;
-  const availableBalanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR_Available);
-
-  // Total withdrawals displayed in ledger metrics cards (only APPROVED and PAID)
   const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
     const fee = w.method === 'USDT' ? 0.5 : 0;
     return acc + w.amountUSD + fee;
   }, 0) || 0;
+
+  const totalDepositsINR = profile?.deposits
+    ?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status))
+    .reduce((acc: number, d: Deposit) => acc + (d.equivalentINR || 0), 0) || 0;
+
+  const totalWithdrawalsINR = profile?.withdrawals
+    ?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status))
+    .reduce((acc: number, w: Withdrawal) => acc + (w.amountINR || 0), 0) || 0;
 
   return (
     <div className="space-y-8 font-sans">

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { simulateFIFO } from '@/utils/balance';
 
 export async function POST(request: Request) {
   try {
@@ -24,14 +25,6 @@ export async function POST(request: Request) {
     const deposits = depositsRes.data || [];
     const withdrawals = withdrawalsRes.data || [];
 
-    // Calculate balance in USD
-    const totalDepositsUSD = deposits.reduce((acc, d) => acc + d.amount_usd, 0);
-    const totalWithdrawalsUSD = withdrawals.reduce((acc, w) => {
-      const fee = w.method === 'USDT' ? 0.5 : 0;
-      return acc + w.amount_usd + fee;
-    }, 0);
-    const availableBalanceUSD = Math.max(0, totalDepositsUSD - totalWithdrawalsUSD);
-
     // Fetch active exchange rate
     const { data: rateSetting } = await supabase
       .from('system_settings')
@@ -40,14 +33,8 @@ export async function POST(request: Request) {
       .maybeSingle();
     const rate = rateSetting ? parseFloat(rateSetting.value) : 83.50;
 
-    // Available balance in INR calculated based on locked historical rates
-    const totalDepositsINR = deposits.reduce((acc, d) => acc + (d.equivalent_inr || 0), 0);
-    const totalWithdrawalsINR = withdrawals.reduce((acc, w) => {
-      const rateAtWithdrawal = w.amount_usd > 0 ? (w.amount_inr / w.amount_usd) : rate;
-      const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
-      return acc + w.amount_inr + feeINR;
-    }, 0);
-    const availableBalanceINR = Math.max(0, totalDepositsINR - totalWithdrawalsINR);
+    // Use simulateFIFO to check and deduct balances precisely from locked historical rates
+    const { pools, availableUSD, availableINR } = simulateFIFO(deposits, withdrawals, rate);
 
     let finalAmountUSD = 0;
     let finalAmountINR = 0;
@@ -70,12 +57,25 @@ export async function POST(request: Request) {
       }
 
       finalAmountINR = parseFloat(amountINR);
-      if (finalAmountINR > availableBalanceINR) {
+      if (finalAmountINR > availableINR) {
         return NextResponse.json({ 
-          error: `Insufficient balance. Available: ₹${availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR` 
+          error: `Insufficient balance. Available: ₹${availableINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR` 
         }, { status: 400 });
       }
-      finalAmountUSD = finalAmountINR / rate;
+
+      // Recalculate consumed USD from the pools in FIFO order
+      let inrToDeduct = finalAmountINR;
+      let usdDeducted = 0;
+      for (const pool of pools) {
+        if (inrToDeduct <= 0) break;
+        if (pool.inr <= 0) continue;
+
+        const consumedINR = Math.min(inrToDeduct, pool.inr);
+        const consumedUSD = consumedINR / pool.rate;
+        usdDeducted += consumedUSD;
+        inrToDeduct -= consumedINR;
+      }
+      finalAmountUSD = usdDeducted;
 
       const { data: withdrawal, error: insertErr } = await supabase
         .from('withdrawals')
@@ -126,12 +126,27 @@ export async function POST(request: Request) {
       }
 
       finalAmountUSD = parseFloat(amountUSD);
-      finalAmountINR = finalAmountUSD * rate;
-      if (finalAmountUSD + 0.5 > availableBalanceUSD) {
+      if (finalAmountUSD + 0.5 > availableUSD) {
         return NextResponse.json({ 
-          error: `Insufficient balance. Available: ₹${availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR (approx. $${availableBalanceUSD.toFixed(4)} USDT)` 
+          error: `Insufficient balance. Available: ₹${availableINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR (approx. $${availableUSD.toFixed(4)} USDT)` 
         }, { status: 400 });
       }
+
+      // Recalculate consumed INR from the pools in FIFO order
+      let usdToDeduct = finalAmountUSD + 0.5;
+      let inrDeducted = 0;
+      for (const pool of pools) {
+        if (usdToDeduct <= 0) break;
+        if (pool.usd <= 0) continue;
+
+        const consumedUSD = Math.min(usdToDeduct, pool.usd);
+        const consumedINR = consumedUSD * pool.rate;
+        inrDeducted += consumedINR;
+        usdToDeduct -= consumedUSD;
+      }
+      
+      const averageRate = inrDeducted / (finalAmountUSD + 0.5);
+      finalAmountINR = finalAmountUSD * averageRate;
 
       const { data: withdrawal, error: insertErr } = await supabase
         .from('withdrawals')

@@ -54,30 +54,8 @@ export default function WithdrawPage() {
       const res = await api.get('/user/profile');
       const user = res.data;
 
-
-
-      const totalDepositsUSD = (user.deposits || [])
-        .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
-        .reduce((acc: number, d: DepositItem) => acc + d.amountUSD, 0);
-      const totalWithdrawalsUSD = (user.withdrawals || [])
-        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
-        .reduce((acc: number, w: WithdrawalItem) => {
-          const fee = w.method === 'USDT' ? 0.5 : 0;
-          return acc + w.amountUSD + fee;
-        }, 0);
-      setBalanceUSD(Math.max(0, totalDepositsUSD - totalWithdrawalsUSD));
-
-      const totalDepositsINR = (user.deposits || [])
-        .filter((d: DepositItem) => ['APPROVED', 'SUCCESS'].includes(d.status))
-        .reduce((acc: number, d: DepositItem) => acc + (d.equivalentINR || 0), 0);
-      const totalWithdrawalsINR = (user.withdrawals || [])
-        .filter((w: WithdrawalItem) => ['PENDING', 'APPROVED', 'PAID'].includes(w.status))
-        .reduce((acc: number, w: WithdrawalItem) => {
-          const rateAtWithdrawal = w.amountUSD > 0 ? (w.amountINR / w.amountUSD) : inrRate;
-          const feeINR = w.method === 'USDT' ? 0.5 * rateAtWithdrawal : 0;
-          return acc + w.amountINR + feeINR;
-        }, 0);
-      setBalanceINR(Math.max(0, totalDepositsINR - totalWithdrawalsINR));
+      setBalanceUSD(user.balanceUSD !== undefined ? user.balanceUSD : 0);
+      setBalanceINR(user.balanceINR !== undefined ? user.balanceINR : 0);
     } catch (err) {
       console.error('Failed to fetch profile/balance:', err);
     } finally {
@@ -242,13 +220,22 @@ export default function WithdrawPage() {
         </h1>
         <p className="text-gray-400 mt-2 text-sm">Choose your preferred withdrawal method below</p>
         <p className="text-red-400 mt-2 text-sm">The amount will be deducted from your total deposits</p>
-        <p className="text-greem-400 mt-2 text-sm">Withdrawal requests are processed within 24-48 hours</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 bg-gray-950/80 border border-gray-850 rounded-2xl p-1.5 w-full">
+      <div className="flex gap-2 bg-gray-950/80 border border-gray-855 rounded-2xl p-1.5 w-full">
         <button
-          onClick={() => { setMethod('BANK'); setError(''); setSuccess(''); }}
+          onClick={() => {
+            setMethod('BANK');
+            setError('');
+            setSuccess('');
+            setAmountUSD('');
+            setAmountINR('');
+            setAccountHolder('');
+            setAccountNumber('');
+            setIfsc('');
+            setWalletAddress('');
+          }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${method === 'BANK'
             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10'
             : 'text-gray-400 hover:text-white hover:bg-gray-900/40'
@@ -258,7 +245,17 @@ export default function WithdrawPage() {
           Bank Transfer (INR)
         </button>
         <button
-          onClick={() => { setMethod('USDT'); setError(''); setSuccess(''); }}
+          onClick={() => {
+            setMethod('USDT');
+            setError('');
+            setSuccess('');
+            setAmountUSD('');
+            setAmountINR('');
+            setAccountHolder('');
+            setAccountNumber('');
+            setIfsc('');
+            setWalletAddress('');
+          }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${method === 'USDT'
             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10'
             : 'text-gray-400 hover:text-white hover:bg-gray-900/40'
