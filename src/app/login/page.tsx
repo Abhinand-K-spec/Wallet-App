@@ -13,7 +13,6 @@ const LoginPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -55,10 +54,6 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
 
-    if (isRegistering && password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
 
     setLoading(true);
 
@@ -70,7 +65,7 @@ const LoginPage = () => {
       
       const response = await api.post(endpoint, payload);
       
-      if (isRegistering && response.data.requiresVerification) {
+      if (response.data.requiresVerification) {
         setOtpEmail(response.data.email);
         setShowOtpScreen(true);
         setOtpTimer(30);
@@ -133,6 +128,7 @@ const LoginPage = () => {
       const response = await api.post('/auth/verify-otp', {
         email: otpEmail,
         token: otpCode,
+        password: password,
       });
 
       const { user, token } = response.data;
@@ -488,22 +484,7 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {isRegistering && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 pl-1">Confirm Password</label>
-                  <div className="relative group">
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full bg-gray-950 border border-gray-800 hover:border-gray-700 focus:border-indigo-500 text-white rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all pl-12 font-sans"
-                      placeholder="••••••••"
-                      required
-                    />
-                    <KeyRound className="w-5 h-5 text-gray-500 absolute left-4 top-3.5 group-focus-within:text-indigo-400 transition-colors" />
-                  </div>
-                </div>
-              )}
+
 
               {!isRegistering && (
                 <div className="flex justify-end">
@@ -526,7 +507,7 @@ const LoginPage = () => {
                 disabled={loading}
                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl py-4 transition-all duration-300 flex items-center justify-center gap-2 mt-6 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? 'Register Secure Account' : 'Sign In to Dashboard')}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? 'Generate' : 'Sign In to Dashboard')}
               </button>
             </form>
 
@@ -537,7 +518,6 @@ const LoginPage = () => {
                   setIsRegistering(!isRegistering);
                   setIdentifier('');
                   setPassword('');
-                  setConfirmPassword('');
                   setError('');
                 }}
                 className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors cursor-pointer"

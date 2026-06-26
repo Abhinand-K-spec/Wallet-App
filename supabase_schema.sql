@@ -98,12 +98,16 @@ ON CONFLICT (key) DO NOTHING;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 DECLARE
-  profile_count integer;
+  max_num integer;
   custom_user_id text;
 BEGIN
-  -- Generate sequential USR-100x IDs
-  SELECT COALESCE(count(*), 0) INTO profile_count FROM public.profiles;
-  custom_user_id := 'USR-' || (1000 + profile_count);
+  -- Generate sequential USR-100x IDs based on the maximum existing ID number
+  SELECT COALESCE(MAX(CAST(SUBSTRING(user_id FROM 'USR-([0-9]+)') AS INTEGER)), 999)
+  INTO max_num 
+  FROM public.profiles
+  WHERE user_id LIKE 'USR-%';
+  
+  custom_user_id := 'USR-' || (max_num + 1);
 
   -- All new users strictly get the 'USER' role. Admins are appointed manually by database query.
   INSERT INTO public.profiles (id, user_id, email, role, status)

@@ -4,68 +4,42 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email } = body;
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
     const supabase = await createClient();
 
-    // Sign up via Supabase Auth
-    const { data: authData, error: authErr } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    // Check if the user is already registered in profiles
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
 
-    if (authErr || !authData.user) {
-      return NextResponse.json({ error: authErr?.message || 'Failed to create user' }, { status: 400 });
+    if (existingUser) {
+      return NextResponse.json({ error: 'User already registered' }, { status: 400 });
     }
 
+    // Generate random 6-digit OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-    // Check if email confirmation is required/completed
-    const isEmailConfirmed = !!authData.user.email_confirmed_at;
+    // Store OTP in database/memory cache
+    const { saveOtp } = await import('@/utils/otpCache');
+    await saveOtp(email, code);
 
-    if (!isEmailConfirmed) {
-      return NextResponse.json({
-        message: 'Verification OTP sent to your email. Please verify to complete signup.',
-        requiresVerification: true,
-        email,
-      }, { status: 200 });
-    }
-
-    // Wait a brief moment or query profiles to ensure the trigger completed
-    let profile = null;
-    let retries = 5;
-    while (retries > 0) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authData.user.id)
-        .maybeSingle();
-      
-      if (data) {
-        profile = data;
-        break;
-      }
-      await new Promise(resolve => setTimeout(resolve, 200));
-      retries--;
-    }
-
-    if (!profile) {
-      return NextResponse.json({ error: 'Failed to initialize user profile' }, { status: 500 });
-    }
+    // Send via nodemailer mailer
+    const { sendOtpEmail } = await import('@/utils/mailer');
+    await sendOtpEmail(email, code);
 
     return NextResponse.json({
-      message: 'User created successfully',
-      token: 'session_active',
-      user: {
-        id: profile.id,
-        userId: profile.user_id,
-        email: profile.email,
-        role: profile.role,
-      },
-    }, { status: 201 });
+      message: 'Verification OTP sent to your email. Please verify to complete signup.',
+      requiresVerification: true,
+      email,
+    }, { status: 200 });
   } catch (error: any) {
     console.error('Registration error in API:', error);
     return NextResponse.json({ error: 'Internal server error', message: error.message }, { status: 500 });

@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, token } = body;
+    const { email, token, password } = body;
 
     if (!email || !token) {
       return NextResponse.json({ error: 'Email and verification code are required' }, { status: 400 });
@@ -12,19 +12,32 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // Verify OTP via Supabase Auth
-    const { data: authData, error: authErr } = await supabase.auth.verifyOtp({
+    // 1. Verify custom OTP using the resilient cache
+    const { verifyAndDeleteOtp } = await import('@/utils/otpCache');
+    const verifyResult = await verifyAndDeleteOtp(email, token);
+
+    if (!verifyResult.valid) {
+      return NextResponse.json({ error: verifyResult.error || 'Verification failed. Invalid code.' }, { status: 400 });
+    }
+
+    // 2. Perform Supabase SignUp now that the email is verified!
+    // Since "Confirm email" is toggled OFF in Supabase, this will succeed and log the user in immediately.
+    if (!password) {
+      return NextResponse.json({ error: 'Password is required to complete signup.' }, { status: 400 });
+    }
+
+    const { data: authData, error: authErr } = await supabase.auth.signUp({
       email,
-      token,
-      type: 'signup',
+      password
     });
 
     if (authErr || !authData.user) {
-      return NextResponse.json({ error: authErr?.message || 'Verification failed. Invalid or expired code.' }, { status: 400 });
+      console.error('Supabase Auth SignUp failed in verify-otp:', authErr);
+      return NextResponse.json({ error: authErr?.message || 'Failed to create account.' }, { status: 400 });
     }
 
-    // Retrieve profile
-    let { data: profile, error: profileErr } = await supabase
+    // Retrieve or create profile
+    let { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
@@ -32,7 +45,6 @@ export async function POST(request: Request) {
 
     if (!profile) {
       // Profile does not exist - create it manually
-      // Get the next user ID by ordering by created_at descending
       const { data: latestUsers } = await supabase
         .from('profiles')
         .select('user_id')
@@ -62,32 +74,16 @@ export async function POST(request: Request) {
         .select()
         .maybeSingle();
 
-      if (newProfile) {
-        profile = newProfile;
-      } else {
-        // Fallback: query again in case trigger fired in the background
-        const { data: retryProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authData.user.id)
-          .maybeSingle();
-        
-        if (retryProfile) {
-          profile = retryProfile;
-        } else {
-          // If profile still doesn't exist and insert failed (due to RLS), use in-memory fallback
-          profile = {
-            id: authData.user.id,
-            user_id: newUserId,
-            email: email,
-            role: 'USER',
-            status: 'ACTIVE',
-            email_verified: true
-          };
-        }
-      }
+      profile = newProfile || {
+        id: authData.user.id,
+        user_id: newUserId,
+        email: email,
+        role: 'USER',
+        status: 'ACTIVE',
+        email_verified: true
+      };
     } else {
-      // Profile exists - try to update email_verified to true
+      // Update email_verified = true
       const { data: updatedProfile } = await supabase
         .from('profiles')
         .update({ email_verified: true })
@@ -97,12 +93,13 @@ export async function POST(request: Request) {
 
       if (updatedProfile) {
         profile = updatedProfile;
+      } else {
+        profile.email_verified = true;
       }
-      // If update fails due to RLS policies, we continue using the existing profile fetched above
     }
 
     return NextResponse.json({
-      message: 'Email verified successfully',
+      message: 'Email verified and account registered successfully',
       token: authData.session?.access_token || 'session_active',
       user: {
         id: profile.id,

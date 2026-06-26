@@ -55,6 +55,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Account suspended' }, { status: 403 });
     }
 
+    if (!profile.email_verified) {
+      // Generate random 6-digit OTP
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+      // Store in database
+      await supabase
+        .from('email_otps')
+        .delete()
+        .eq('email', profile.email);
+
+      const { error: otpErr } = await supabase
+        .from('email_otps')
+        .insert({
+          email: profile.email,
+          code,
+          expires_at: expiresAt
+        });
+
+      if (otpErr) {
+        console.error('Failed to store OTP during login verification block:', otpErr);
+      } else {
+        // Send the email
+        const { sendOtpEmail } = await import('@/utils/mailer');
+        await sendOtpEmail(profile.email, code);
+      }
+
+      return NextResponse.json({
+        message: 'Verification OTP sent to your email. Please verify to log in.',
+        requiresVerification: true,
+        email: profile.email
+      });
+    }
+
     return NextResponse.json({
       message: 'Login successful',
       token: authData.session?.access_token || 'session_active',
