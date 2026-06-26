@@ -221,7 +221,7 @@ export default function HistoryPage() {
                                 TxID/UTR: {tx.utr}
                               </span>
                             )}
-                            {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                            {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && tx.transactionType === 'WITHDRAWAL' && (
                                <button
                                  onClick={() => {
                                    setSelectedRequestId(tx.id);
@@ -295,7 +295,7 @@ export default function HistoryPage() {
                         TxID/UTR: {tx.utr}
                       </div>
                     )}
-                    {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                    {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && tx.transactionType === 'WITHDRAWAL' && (
                       <button
                         onClick={() => {
                           setSelectedRequestId(tx.id);
