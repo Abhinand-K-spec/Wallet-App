@@ -84,7 +84,8 @@ const statusBadge = (status: string) => {
     REJECTED: 'bg-red-500/10 text-red-400 border-red-500/20',
     EXPIRED: 'bg-gray-500/10 text-gray-400 border-gray-700/20',
   };
-  return `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${styles[status] || 'bg-gray-500/10 text-gray-400 border-gray-700/20'}`;
+  const className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${styles[status] || 'bg-gray-500/10 text-gray-400 border-gray-700/20'}`;
+  return <span className={className}>{status}</span>;
 };
 
 export default function UserTransactionHistoryModal({
