@@ -16,26 +16,58 @@ interface OnChainResult {
 // ---------------------------------------------------------
 
 const verifyTronUSDT = async (txHash: string, expectedRecipient: string, apiKey: string): Promise<OnChainResult> => {
+  const cleanHash = txHash.trim();
+  const lowerHash = cleanHash.toLowerCase();
+
+  // Explicit mock support: must start with 'mock' or 'test'
+  if (lowerHash.startsWith('mock') || lowerHash.startsWith('test')) {
+    // Attempt to parse amount from the hash (e.g., mock_100 -> 100, test_500.5 -> 500.5)
+    const match = lowerHash.match(/(?:mock_|test_|mock|test)([\d.]+)/);
+    // If no valid number is specified, do NOT auto-match any arbitrary number like 1000
+    const amountUSD = match ? parseFloat(match[1]) : -1.0;
+
+    console.log(`[Tron Verification] Mock transaction detected. Mapped Amount: $${amountUSD}`);
+    if (amountUSD >= 0) {
+      return {
+        success: true,
+        network: 'MOCK_TRON',
+        fromAddress: 'TMockUserWalletAddress777777777777777',
+        toAddress: expectedRecipient,
+        amountUSD,
+        txHash: cleanHash,
+      };
+    } else {
+      return {
+        success: false,
+        network: 'MOCK_TRON',
+        fromAddress: '',
+        toAddress: '',
+        amountUSD: 0,
+        message: 'Mock transaction amount not specified in hash. Use mock_[amount] or test_[amount] format (e.g., mock_100).',
+      };
+    }
+  }
+
   const tronHashRegex = /^(0x)?[A-Fa-f0-9]{64}$/;
-  if (!tronHashRegex.test(txHash)) {
-    console.log(`[Tron Verification] TxHash '${txHash}' is not a standard Tron hash. Falling back to mock verification.`);
+  if (!tronHashRegex.test(cleanHash)) {
+    console.log(`[Tron Verification] TxHash '${cleanHash}' is not a standard Tron hash and has no mock prefix. Verification failed.`);
     return {
-      success: true,
-      network: 'MOCK_TRON',
-      fromAddress: 'TMockUserWalletAddress777777777777777',
-      toAddress: expectedRecipient,
-      amountUSD: 1000.0,
-      txHash,
+      success: false,
+      network: 'TRON',
+      fromAddress: '',
+      toAddress: '',
+      amountUSD: 0,
+      message: 'Invalid transaction hash format. Standard Tron transaction hash must be a 64-character hex string, or mock_[amount] for testing.',
     };
   }
 
-  const cleanHash = txHash.replace('0x', '').toLowerCase();
+  const cleanHashHex = cleanHash.replace('0x', '').toLowerCase();
   
   // Method 1: Try Tronscan API if key is valid and not equal to address
   const isKeyValid = apiKey && apiKey !== 'YOUR_API_KEY_HERE' && apiKey !== expectedRecipient;
   if (isKeyValid) {
     try {
-      const url = `https://apilist.tronscanapi.com/api/transaction-info?hash=${cleanHash}`;
+      const url = `https://apilist.tronscanapi.com/api/transaction-info?hash=${cleanHashHex}`;
       const res = await fetch(url, { headers: { 'TRON-PRO-API-KEY': apiKey, 'Accept': 'application/json' } });
       const txData = await res.json();
 
@@ -72,7 +104,7 @@ const verifyTronUSDT = async (txHash: string, expectedRecipient: string, apiKey:
     const data = await res.json();
 
     if (data && data.success && Array.isArray(data.data)) {
-      const matchedTx = data.data.find((tx: any) => tx.transaction_id.toLowerCase() === cleanHash);
+      const matchedTx = data.data.find((tx: any) => tx.transaction_id.toLowerCase() === cleanHashHex);
       if (matchedTx) {
         const decimals = Number(matchedTx.token_info?.decimals || 6);
         const amountUSD = Number(matchedTx.value) / Math.pow(10, decimals);
