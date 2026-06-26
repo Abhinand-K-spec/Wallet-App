@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
-import { sendOtpEmail } from '@/utils/mailer';
-import { saveOtp } from '@/utils/otpCache';
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -15,7 +12,7 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // Check if the email is already verified
+    // Check if the email is already verified in profiles
     const { data: profile } = await supabase
       .from('profiles')
       .select('email_verified')
@@ -26,15 +23,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This email is already verified.' }, { status: 400 });
     }
 
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    // Call Supabase Auth resend natively
+    const { error: resendErr } = await supabase.auth.resend({
+      type: 'signup',
+      email
+    });
 
-    // Store OTP in database/memory cache
-    await saveOtp(email, code);
-
-    // Send the email
-    await sendOtpEmail(email, code);
+    if (resendErr) {
+      console.error('Supabase Auth resend error:', resendErr);
+      return NextResponse.json({ error: resendErr.message }, { status: 400 });
+    }
 
     return NextResponse.json({ message: 'Verification code resent successfully' }, { status: 200 });
   } catch (error: any) {

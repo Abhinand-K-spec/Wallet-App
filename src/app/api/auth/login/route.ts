@@ -34,8 +34,23 @@ export async function POST(request: Request) {
       password,
     });
 
-    if (authErr || !authData.user) {
-      return NextResponse.json({ error: authErr?.message || 'Invalid credentials' }, { status: 401 });
+    if (authErr) {
+      if (authErr.message.includes('Email not confirmed')) {
+        // Resend Supabase OTP natively
+        const { error: resendErr } = await supabase.auth.resend({
+          type: 'signup',
+          email
+        });
+        if (resendErr) {
+          console.error('Failed to resend confirmation email on unconfirmed login:', resendErr);
+        }
+        return NextResponse.json({
+          message: 'Verification OTP sent to your email. Please verify to log in.',
+          requiresVerification: true,
+          email
+        });
+      }
+      return NextResponse.json({ error: authErr.message || 'Invalid credentials' }, { status: 401 });
     }
 
     // Fetch custom profile data (user_id, role, status)
@@ -55,38 +70,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Account suspended' }, { status: 403 });
     }
 
-    if (!profile.email_verified) {
-      // Generate random 6-digit OTP
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
-      // Store in database
+    // Dynamically sync email_verified in database profiles if it is false but user is confirmed in Auth
+    if (!profile.email_verified && authData.user?.email_confirmed_at) {
       await supabase
-        .from('email_otps')
-        .delete()
-        .eq('email', profile.email);
-
-      const { error: otpErr } = await supabase
-        .from('email_otps')
-        .insert({
-          email: profile.email,
-          code,
-          expires_at: expiresAt
-        });
-
-      if (otpErr) {
-        console.error('Failed to store OTP during login verification block:', otpErr);
-      } else {
-        // Send the email
-        const { sendOtpEmail } = await import('@/utils/mailer');
-        await sendOtpEmail(profile.email, code);
-      }
-
-      return NextResponse.json({
-        message: 'Verification OTP sent to your email. Please verify to log in.',
-        requiresVerification: true,
-        email: profile.email
-      });
+        .from('profiles')
+        .update({ email_verified: true })
+        .eq('id', authData.user.id);
+      profile.email_verified = true;
     }
 
     return NextResponse.json({

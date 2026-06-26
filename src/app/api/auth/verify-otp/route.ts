@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, token, password } = body;
+    const { email, token } = body;
 
     if (!email || !token) {
       return NextResponse.json({ error: 'Email and verification code are required' }, { status: 400 });
@@ -12,35 +12,23 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // 1. Verify custom OTP using the resilient cache
-    const { verifyAndDeleteOtp } = await import('@/utils/otpCache');
-    const verifyResult = await verifyAndDeleteOtp(email, token);
-
-    if (!verifyResult.valid) {
-      return NextResponse.json({ error: verifyResult.error || 'Verification failed. Invalid code.' }, { status: 400 });
-    }
-
-    // 2. Perform Supabase SignUp now that the email is verified!
-    // Since "Confirm email" is toggled OFF in Supabase, this will succeed and log the user in immediately.
-    if (!password) {
-      return NextResponse.json({ error: 'Password is required to complete signup.' }, { status: 400 });
-    }
-
-    const { data: authData, error: authErr } = await supabase.auth.signUp({
+    // 1. Verify OTP natively via Supabase Auth
+    const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
       email,
-      password
+      token,
+      type: 'signup'
     });
 
-    if (authErr || !authData.user) {
-      console.error('Supabase Auth SignUp failed in verify-otp:', authErr);
-      return NextResponse.json({ error: authErr?.message || 'Failed to create account.' }, { status: 400 });
+    if (verifyErr || !verifyData.user) {
+      console.error('Supabase Auth verifyOtp failed:', verifyErr);
+      return NextResponse.json({ error: verifyErr?.message || 'Verification failed. Invalid or expired code.' }, { status: 400 });
     }
 
-    // Retrieve or create profile
+    // 2. Retrieve or create profile
     let { data: profile } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', authData.user.id)
+      .eq('id', verifyData.user.id)
       .maybeSingle();
 
     if (!profile) {
@@ -64,7 +52,7 @@ export async function POST(request: Request) {
       const { data: newProfile } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          id: verifyData.user.id,
           user_id: newUserId,
           email: email,
           role: 'USER',
@@ -75,7 +63,7 @@ export async function POST(request: Request) {
         .maybeSingle();
 
       profile = newProfile || {
-        id: authData.user.id,
+        id: verifyData.user.id,
         user_id: newUserId,
         email: email,
         role: 'USER',
@@ -87,7 +75,7 @@ export async function POST(request: Request) {
       const { data: updatedProfile } = await supabase
         .from('profiles')
         .update({ email_verified: true })
-        .eq('id', authData.user.id)
+        .eq('id', verifyData.user.id)
         .select()
         .maybeSingle();
 
@@ -100,7 +88,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message: 'Email verified and account registered successfully',
-      token: authData.session?.access_token || 'session_active',
+      token: verifyData.session?.access_token || 'session_active',
       user: {
         id: profile.id,
         userId: profile.user_id,

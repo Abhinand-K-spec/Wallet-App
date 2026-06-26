@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email VARCHAR(255) UNIQUE NOT NULL,
   role VARCHAR(20) DEFAULT 'USER' NOT NULL CHECK (role IN ('USER', 'ADMIN')),
   status VARCHAR(20) DEFAULT 'ACTIVE' NOT NULL CHECK (status IN ('ACTIVE', 'SUSPENDED')),
+  email_verified BOOLEAN DEFAULT FALSE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -109,9 +110,9 @@ BEGIN
   
   custom_user_id := 'USR-' || (max_num + 1);
 
-  -- All new users strictly get the 'USER' role. Admins are appointed manually by database query.
-  INSERT INTO public.profiles (id, user_id, email, role, status)
-  VALUES (new.id, custom_user_id, new.email, 'USER', 'ACTIVE');
+  -- All new users strictly get the 'USER' role and start as unverified.
+  INSERT INTO public.profiles (id, user_id, email, role, status, email_verified)
+  VALUES (new.id, custom_user_id, new.email, 'USER', 'ACTIVE', FALSE);
   
   RETURN new;
 END;

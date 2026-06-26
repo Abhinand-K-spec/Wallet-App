@@ -4,10 +4,10 @@ import { createClient } from '@/utils/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { email, password } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -23,17 +23,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User already registered' }, { status: 400 });
     }
 
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    // Call Supabase Auth signUp to register the user and trigger native verification email/OTP
+    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      email,
+      password
+    });
 
-    // Store OTP in database/memory cache
-    const { saveOtp } = await import('@/utils/otpCache');
-    await saveOtp(email, code);
-
-    // Send via nodemailer mailer
-    const { sendOtpEmail } = await import('@/utils/mailer');
-    await sendOtpEmail(email, code);
+    if (signUpErr) {
+      console.error('Supabase Auth signUp error during registration:', signUpErr);
+      return NextResponse.json({ error: signUpErr.message }, { status: 400 });
+    }
 
     return NextResponse.json({
       message: 'Verification OTP sent to your email. Please verify to complete signup.',
