@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
 import type { RootState } from '@/store/store';
 import api from '@/api/axios';
-import { Users, UserX, UserCheck, Shield, Search, Loader2 } from 'lucide-react';
+import { Users, UserX, UserCheck, Shield, Search, Loader2, History } from 'lucide-react';
+import UserTransactionHistoryModal from '@/components/UserTransactionHistoryModal';
 
 interface UserItem {
   id: string;
@@ -45,6 +46,10 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  
+  // History Modal State
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   
   // Pagination
   const [page, setPage] = useState(1);
@@ -305,39 +310,52 @@ export default function AdminUsersPage() {
                             {new Date(u.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                           </td>
                           <td className="py-4 px-6 text-right">
-                            {isSelf ? (
-                              <span className="text-xs text-gray-600 flex items-center gap-1.5 justify-end">
-                                <Shield className="w-3.5 h-3.5" />
-                                System Protected
-                              </span>
-                            ) : (
+                            <div className="flex items-center justify-end gap-2">
                               <button
-                                onClick={() => handleToggleStatus(u.id)}
-                                disabled={actionLoading === u.id}
-                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border shadow-sm cursor-pointer ${
-                                  isSuspended
-                                    ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:border-emerald-500/50'
-                                    : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30 hover:border-red-500/50'
-                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setIsHistoryModalOpen(true);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-750 text-gray-300 border border-gray-700 hover:border-gray-600 transition-all shadow-sm cursor-pointer"
                               >
-                                {actionLoading === u.id ? (
-                                  <>
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    Updating...
-                                  </>
-                                ) : isSuspended ? (
-                                  <>
-                                    <UserCheck className="w-3.5 h-3.5" />
-                                    Activate
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserX className="w-3.5 h-3.5" />
-                                    Suspend
-                                  </>
-                                )}
+                                <History className="w-3.5 h-3.5" />
+                                History
                               </button>
-                            )}
+                              
+                              {isSelf ? (
+                                <span className="text-xs text-gray-600 flex items-center gap-1.5">
+                                  <Shield className="w-3.5 h-3.5" />
+                                  System Protected
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleStatus(u.id)}
+                                  disabled={actionLoading === u.id}
+                                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border shadow-sm cursor-pointer ${
+                                    isSuspended
+                                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:border-emerald-500/50'
+                                      : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/30 hover:border-red-500/50'
+                                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                  {actionLoading === u.id ? (
+                                    <>
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                      Updating...
+                                    </>
+                                  ) : isSuspended ? (
+                                    <>
+                                      <UserCheck className="w-3.5 h-3.5" />
+                                      Activate
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserX className="w-3.5 h-3.5" />
+                                      Suspend
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -395,7 +413,18 @@ export default function AdminUsersPage() {
                           <p className="text-gray-400 mt-0.5">{new Date(u.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                         </div>
 
-                        <div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedUser(u);
+                              setIsHistoryModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-750 text-gray-300 border border-gray-700 hover:border-gray-600 transition-all shadow-sm cursor-pointer"
+                          >
+                            <History className="w-3.5 h-3.5" />
+                            History
+                          </button>
+
                           {isSelf ? (
                             <span className="text-xs text-gray-600 flex items-center gap-1.5">
                               <Shield className="w-3.5 h-3.5" />
@@ -463,6 +492,16 @@ export default function AdminUsersPage() {
             </div>
           )}
         </div>
+
+        {/* User Transaction History Modal */}
+        <UserTransactionHistoryModal
+          isOpen={isHistoryModalOpen}
+          onClose={() => {
+            setIsHistoryModalOpen(false);
+            setSelectedUser(null);
+          }}
+          user={selectedUser}
+        />
       </div>
   );
 }
