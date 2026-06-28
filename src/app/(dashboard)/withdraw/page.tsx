@@ -284,9 +284,9 @@ export default function WithdrawPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className={`grid grid-cols-1 ${method === 'USDT' ? 'sm:grid-cols-2' : ''} gap-4 mb-6`}>
           {/* Balance Card */}
-          <div className="bg-gray-950/80 border border-gray-850 rounded-2xl p-4 flex items-center gap-3">
+          <div className="bg-gray-950/80 border border-gray-855 rounded-2xl p-4 flex items-center gap-3">
             <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
               <DollarSign className="w-4 h-4 text-emerald-400" />
             </div>
@@ -299,22 +299,24 @@ export default function WithdrawPage() {
           </div>
 
           {/* Live Exchange Rate Card */}
-          <div className="bg-gray-950/80 border border-gray-855 rounded-2xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-indigo-500/10 rounded-xl">
-                <RefreshCw className={`w-4 h-4 text-indigo-400 ${rateLoading ? 'animate-spin' : ''}`} />
+          {method === 'USDT' && (
+            <div className="bg-gray-950/80 border border-gray-855 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-indigo-500/10 rounded-xl">
+                  <RefreshCw className={`w-4 h-4 text-indigo-400 ${rateLoading ? 'animate-spin' : ''}`} />
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Exchange Rate (Live)</p>
+                  <p className="text-sm font-bold text-white mt-0.5 font-mono">
+                    {rateLoading ? 'Fetching...' : `1 USDT = ₹${inrRate.toFixed(2)} INR`}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Exchange Rate (Live)</p>
-                <p className="text-sm font-bold text-white mt-0.5 font-mono">
-                  {rateLoading ? 'Fetching...' : `1 USDT = ₹${inrRate.toFixed(2)} INR`}
-                </p>
+              <div className="text-[9px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-black border border-indigo-500/20 font-sans shrink-0 self-start">
+                USDT / INR
               </div>
             </div>
-            <div className="text-[9px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-black border border-indigo-500/20 font-sans shrink-0 self-start">
-              USDT / INR
-            </div>
-          </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
