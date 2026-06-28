@@ -38,7 +38,14 @@ export default function UserPaymentProofModal({
           if (res.data.hasProof === false && !res.data.withdrawal?.utr && !res.data.deposit?.utr) {
             setError('No payment proof uploaded for this transaction.');
           } else {
-            setProof(res.data);
+            const data = res.data;
+            if (data.withdrawal) {
+              data.withdrawal.status = data.withdrawal.status === 'PAID' ? 'SUCCESS' : data.withdrawal.status;
+            }
+            if (data.deposit) {
+              data.deposit.status = data.deposit.status === 'PAID' ? 'SUCCESS' : data.deposit.status;
+            }
+            setProof(data);
           }
         } catch (err: any) {
           console.error(err);
@@ -125,7 +132,14 @@ export default function UserPaymentProofModal({
                       <table className="w-full text-left text-sm border-collapse">
                         <thead>
                           <tr className="border-b border-gray-800 text-gray-400">
-                            <th className="py-2.5 px-4 font-medium font-sans">TxID / UTR (Hash)</th>
+                            <th className="py-2.5 px-4 font-medium font-sans">TxID / UTR</th>
+                            {isBankTransfer && (
+                              <>
+                                <th className="py-2.5 px-4 font-medium font-sans">Beneficiary Name</th>
+                                <th className="py-2.5 px-4 font-medium font-sans">Account Number</th>
+                                <th className="py-2.5 px-4 font-medium font-sans">IFSC Code</th>
+                              </>
+                            )}
                             {!isBankTransfer && (
                               <th className="py-2.5 px-4 font-medium font-sans">Amount (USDT)</th>
                             )}
@@ -140,6 +154,13 @@ export default function UserPaymentProofModal({
                             <td className="py-4 px-4 font-mono text-indigo-400 text-xs break-all select-all">
                               {details?.utr || '—'}
                             </td>
+                            {isBankTransfer && (
+                              <>
+                                <td className="py-4 px-4 font-sans text-gray-200">{details?.accountHolder || '—'}</td>
+                                <td className="py-4 px-4 font-mono text-gray-200 select-all">{details?.accountNumber || '—'}</td>
+                                <td className="py-4 px-4 font-mono text-gray-200 select-all">{details?.ifsc || '—'}</td>
+                              </>
+                            )}
                             {!isBankTransfer && (
                               <td className="py-4 px-4 font-mono text-gray-200">
                                 ${details?.amountUSD?.toFixed(4) || '—'}
@@ -247,19 +268,33 @@ export default function UserPaymentProofModal({
                     </div>
                   )}
 
-                  {(proof.account || proof.wallet) && (
-                    <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60 font-mono">
-                      {proof.wallet ? (
-                        <>
-                          <span className="text-gray-500 block mb-0.5 font-sans">Destination Wallet Address</span>
-                          <span className="text-gray-200 break-all select-all">{proof.wallet}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-gray-500 block mb-0.5 font-sans">Destination Account Number</span>
-                          <span className="text-gray-200 select-all">{proof.account}</span>
-                        </>
+                  {proof.currency === 'INR' && (
+                    <>
+                      {proof.accountHolder && (
+                        <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60">
+                          <span className="text-gray-500 block mb-0.5 font-sans">Beneficiary Name</span>
+                          <span className="font-semibold text-gray-200">{proof.accountHolder}</span>
+                        </div>
                       )}
+                      {(proof.accountNumber || proof.account) && (
+                        <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60 font-mono">
+                          <span className="text-gray-500 block mb-0.5 font-sans">Destination Account Number</span>
+                          <span className="text-gray-200 select-all">{proof.accountNumber || proof.account}</span>
+                        </div>
+                      )}
+                      {proof.ifsc && (
+                        <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60 font-mono">
+                          <span className="text-gray-500 block mb-0.5 font-sans">IFSC Code</span>
+                          <span className="text-gray-200 select-all">{proof.ifsc}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {proof.currency !== 'INR' && proof.wallet && (
+                    <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60 font-mono">
+                      <span className="text-gray-500 block mb-0.5 font-sans">Destination Wallet Address</span>
+                      <span className="text-gray-200 break-all select-all">{proof.wallet}</span>
                     </div>
                   )}
 

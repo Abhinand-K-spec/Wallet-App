@@ -83,8 +83,14 @@ export default function HistoryPage() {
     const fetchData = async () => {
       try {
         const res = await api.get('/user/transactions');
-        setDeposits(res.data.deposits);
-        setWithdrawals(res.data.withdrawals);
+        setDeposits((res.data.deposits || []).map((d: any) => ({
+          ...d,
+          status: d.status === 'PAID' ? 'SUCCESS' : d.status
+        })));
+        setWithdrawals((res.data.withdrawals || []).map((w: any) => ({
+          ...w,
+          status: w.status === 'PAID' ? 'SUCCESS' : w.status
+        })));
       } catch (err) {
         console.error(err);
       } finally {

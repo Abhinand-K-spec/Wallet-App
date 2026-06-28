@@ -66,7 +66,28 @@ const UserDashboard = () => {
     const fetchProfile = async () => {
       try {
         const res = await api.get('/user/profile');
-        setProfile(res.data);
+        const data = res.data;
+        if (data) {
+          if (data.deposits) {
+            data.deposits = data.deposits.map((d: any) => ({
+              ...d,
+              status: d.status === 'PAID' ? 'SUCCESS' : d.status
+            }));
+          }
+          if (data.withdrawals) {
+            data.withdrawals = data.withdrawals.map((w: any) => ({
+              ...w,
+              status: w.status === 'PAID' ? 'SUCCESS' : w.status
+            }));
+          }
+          if (data.transactions) {
+            data.transactions = data.transactions.map((tx: any) => ({
+              ...tx,
+              status: tx.status === 'PAID' ? 'SUCCESS' : tx.status
+            }));
+          }
+        }
+        setProfile(data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -89,7 +110,7 @@ const UserDashboard = () => {
   const availableBalanceINR = (profile as any)?.balanceINR !== undefined ? (profile as any).balanceINR : 0;
 
   const totalDepositsUSD = profile?.deposits?.filter((d: Deposit) => ['APPROVED', 'SUCCESS'].includes(d.status)).reduce((acc: number, d: Deposit) => acc + d.amountUSD, 0) || 0;
-  const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
+  const totalWithdrawalsUSD = profile?.withdrawals?.filter((w: Withdrawal) => ['APPROVED', 'PAID', 'SUCCESS'].includes(w.status)).reduce((acc: number, w: Withdrawal) => {
     const fee = w.method === 'USDT' ? 0.5 : 0;
     return acc + w.amountUSD + fee;
   }, 0) || 0;
@@ -99,7 +120,7 @@ const UserDashboard = () => {
     .reduce((acc: number, d: Deposit) => acc + (d.equivalentINR || 0), 0) || 0;
 
   const totalWithdrawalsINR = profile?.withdrawals
-    ?.filter((w: Withdrawal) => ['APPROVED', 'PAID'].includes(w.status))
+    ?.filter((w: Withdrawal) => ['APPROVED', 'PAID', 'SUCCESS'].includes(w.status))
     .reduce((acc: number, w: Withdrawal) => acc + (w.amountINR || 0), 0) || 0;
 
   return (

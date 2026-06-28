@@ -18,6 +18,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'paymentRequestId is required' }, { status: 400 });
     }
 
+    // Fetch withdrawal details if this transaction is a withdrawal
+    const { data: withdrawal } = await supabase
+      .from('withdrawals')
+      .select('*')
+      .eq('id', paymentRequestId)
+      .maybeSingle();
+
     const { data: proof, error: fetchErr } = await supabase
       .from('payment_proofs')
       .select('*')
@@ -25,13 +32,6 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (fetchErr || !proof) {
-      // Try to fetch withdrawal details
-      const { data: withdrawal } = await supabase
-        .from('withdrawals')
-        .select('*')
-        .eq('id', paymentRequestId)
-        .maybeSingle();
-
       if (withdrawal) {
         return NextResponse.json({
           hasProof: false,
@@ -42,6 +42,9 @@ export async function GET(request: Request) {
             amountINR: withdrawal.amount_inr,
             method: withdrawal.method,
             status: withdrawal.status,
+            accountHolder: withdrawal.account_holder,
+            accountNumber: withdrawal.account_number,
+            ifsc: withdrawal.ifsc,
             updatedAt: withdrawal.updated_at
           }
         });
@@ -89,7 +92,11 @@ export async function GET(request: Request) {
       time: proof.approved_time,
       status: proof.approved_status,
       approvedAt: proof.approved_at,
-      createdAt: proof.created_at
+      createdAt: proof.created_at,
+      // Append user bank details from withdrawal if available
+      accountHolder: withdrawal?.account_holder || null,
+      accountNumber: withdrawal?.account_number || null,
+      ifsc: withdrawal?.ifsc || null
     });
   } catch (error: any) {
     console.error('User payment proof GET error:', error);
