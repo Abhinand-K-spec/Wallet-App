@@ -509,7 +509,7 @@ export default function UserTransactionHistoryModal({
                                 )}
                               </td>
                               <td className="py-3 px-5 font-mono font-medium text-gray-200">
-                                ${w.amountUSD.toFixed(4)}
+                                {w.method === 'USDT' ? `$${w.amountUSD.toFixed(4)}` : '—'}
                               </td>
                               <td className="py-3 px-5 font-mono font-medium text-gray-300">
                                 ₹{w.amountINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
