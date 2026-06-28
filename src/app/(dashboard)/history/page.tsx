@@ -538,6 +538,17 @@ export default function HistoryPage() {
                                 TxID/UTR: {w.utr}
                               </span>
                             )}
+                            {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(w.status) && (
+                               <button
+                                 onClick={() => {
+                                   setSelectedRequestId(w.id);
+                                   setIsProofModalOpen(true);
+                                 }}
+                                 className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 mt-1.5 cursor-pointer transition-colors w-fit border border-indigo-500/20 bg-indigo-500/5 px-2 py-0.5 rounded"
+                               >
+                                 <FileText className="w-3 h-3" /> View Receipt
+                               </button>
+                             )}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
@@ -593,6 +604,17 @@ export default function HistoryPage() {
                       <p className="text-[9px] text-blue-400 font-medium">
                         The amount will credit in your ac after 3 hours
                       </p>
+                    )}
+                    {['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(w.status) && (
+                      <button
+                        onClick={() => {
+                          setSelectedRequestId(w.id);
+                          setIsProofModalOpen(true);
+                        }}
+                        className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center gap-1 mt-2 cursor-pointer transition-colors border border-indigo-500/20 bg-indigo-500/5 px-3 py-1.5 rounded-lg w-full"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> View Receipt
+                      </button>
                     )}
                     <div className="text-[10px] text-gray-500 flex flex-col gap-0.5 pt-2 border-t border-gray-800/30">
                       <div className="flex justify-between">

@@ -151,18 +151,18 @@ export default function UserPaymentProofModal({
                         </thead>
                         <tbody>
                           <tr className="text-white hover:bg-gray-800/10 transition-colors">
-                            <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-indigo-400 select-all truncate max-w-[65px] xs:max-w-[85px] sm:max-w-[150px]" title={details?.utr}>
+                            <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-indigo-400 select-all break-all leading-tight">
                               {details?.utr || '—'}
                             </td>
                             {isBankTransfer && (
                               <>
-                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-sans text-gray-200 truncate max-w-[60px] xs:max-w-[80px] sm:max-w-[120px]" title={details?.accountHolder}>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-sans text-gray-200 break-words leading-tight">
                                   {details?.accountHolder || '—'}
                                 </td>
-                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all truncate max-w-[70px] xs:max-w-[90px] sm:max-w-[130px]" title={details?.accountNumber}>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all break-all leading-tight">
                                   {details?.accountNumber || '—'}
                                 </td>
-                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all truncate max-w-[50px] xs:max-w-[70px] sm:max-w-[100px]" title={details?.ifsc}>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all break-all leading-tight">
                                   {details?.ifsc || '—'}
                                 </td>
                               </>
