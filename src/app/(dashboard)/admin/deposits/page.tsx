@@ -348,17 +348,20 @@ export default function AdminDepositsPage() {
 
   return (
     <div className="space-y-8 font-sans">
+      {/* Header with Date Filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-lg">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Verify Deposits</h1>
-          <p className="text-gray-400 text-sm mt-1">Review and approve user crypto deposit submissions</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <ArrowDownToLine className="w-6 h-6 text-indigo-400" />
+            Verify Deposits
+          </h1>
+          <p className="text-gray-400 text-xs mt-0.5">Review and approve user crypto deposit submissions</p>
         </div>
 
         {/* Date Filter */}
-        <div className="flex flex-wrap items-center gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl shadow-lg">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Deposits Date:</span>
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Date Range:</span>
+          <div className="flex items-center gap-1.5">
             <input
               type="date"
               value={startDate}
@@ -366,9 +369,9 @@ export default function AdminDepositsPage() {
                 setStartDate(e.target.value);
                 setProcessedPage(1);
               }}
-              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+              className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
             />
-            <span className="text-gray-600 text-xs">—</span>
+            <span className="text-gray-650 text-xs">—</span>
             <input
               type="date"
               value={endDate}
@@ -376,10 +379,9 @@ export default function AdminDepositsPage() {
                 setEndDate(e.target.value);
                 setProcessedPage(1);
               }}
-              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+              className="bg-gray-950 border border-gray-855 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
             />
           </div>
-
           {(startDate || endDate) && (
             <button
               onClick={() => {
@@ -387,12 +389,13 @@ export default function AdminDepositsPage() {
                 setEndDate('');
                 setProcessedPage(1);
               }}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
+              className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer"
             >
-              Clear Filter
+              Reset
             </button>
           )}
         </div>
+      </div>
 
         {/* Pending Deposits */}
         <div>

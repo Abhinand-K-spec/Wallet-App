@@ -38,8 +38,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [expandedHash, setExpandedHash] = useState<string | null>(null);
-  const [expandedFrom, setExpandedFrom] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   const { exchangeRate: appRate, refreshRate } = useExchangeRate();
@@ -310,72 +308,21 @@ const AdminDashboard = () => {
                     <tbody className="divide-y divide-gray-800/50 text-sm">
                       {currentTxs.map((tx) => (
                         <tr key={tx.hash} className="hover:bg-gray-800/20 transition-colors group">
-                          <td className="py-3 pl-2 font-mono text-xs text-indigo-400 group-hover:text-indigo-300 select-all">
-                            <div className="flex flex-col gap-1 max-w-[140px] md:max-w-none">
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  onClick={() => setExpandedHash(expandedHash === tx.hash ? null : tx.hash)}
-                                  className="cursor-pointer hover:underline text-left font-mono"
-                                  title="Click to toggle full hash inline"
-                                >
-                                  {tx.hash ? `${tx.hash.slice(0, 6)}...${tx.hash.slice(-6)}` : '—'}
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(tx.hash);
-                                    dispatch(addToast({ message: 'Transaction hash copied to clipboard!', type: 'success' }));
-                                  }}
-                                  className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-white transition-colors cursor-pointer"
-                                  title="Copy full transaction hash"
-                                >
-                                  <Copy className="w-3 h-3" />
-                                </button>
-                                <a
-                                  href={`https://tronscan.org/#/transaction/${tx.hash}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-white transition-colors cursor-pointer"
-                                  title="View on Tronscan"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                </a>
-                              </div>
-                              {expandedHash === tx.hash && (
-                                <span className="text-[10px] text-gray-400 break-all select-all font-mono bg-gray-950 p-1.5 rounded border border-gray-850 block mt-1">
-                                  {tx.hash}
-                                </span>
-                              )}
-                            </div>
+                          <td className="py-3 pl-2 font-mono text-[10px] text-indigo-400 group-hover:text-indigo-350 select-all leading-normal">
+                            <a
+                              href={`https://tronscan.org/#/transaction/${tx.hash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block break-all max-w-[120px] md:max-w-[180px] hover:underline cursor-pointer"
+                              title="View on Tronscan"
+                            >
+                              {tx.hash}
+                            </a>
                           </td>
-                          <td className="py-3 font-mono text-xs text-gray-400 select-all" title={tx.from || ''}>
-                            <div className="flex flex-col gap-1 max-w-[140px] md:max-w-none">
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  onClick={() => setExpandedFrom(expandedFrom === tx.hash ? null : tx.hash)}
-                                  className="cursor-pointer hover:underline text-left font-mono"
-                                  title="Click to toggle full address inline"
-                                >
-                                  {tx.from ? `${tx.from.slice(0, 6)}...${tx.from.slice(-6)}` : '—'}
-                                </button>
-                                {tx.from && (
-                                  <button
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(tx.from);
-                                      dispatch(addToast({ message: 'Sender address copied to clipboard!', type: 'success' }));
-                                    }}
-                                    className="p-1 hover:bg-gray-800 rounded text-gray-500 hover:text-white transition-colors cursor-pointer"
-                                    title="Copy full sender address"
-                                  >
-                                    <Copy className="w-3 h-3" />
-                                  </button>
-                                )}
-                              </div>
-                              {expandedFrom === tx.hash && tx.from && (
-                                <span className="text-[10px] text-gray-400 break-all select-all font-mono bg-gray-950 p-1.5 rounded border border-gray-855 block mt-1">
-                                  {tx.from}
-                                </span>
-                              )}
-                            </div>
+                          <td className="py-3 font-mono text-[10px] text-gray-400 select-all leading-normal">
+                            <span className="block break-all max-w-[100px] md:max-w-[150px]" title={tx.from || ''}>
+                              {tx.from || '—'}
+                            </span>
                           </td>
                           <td className="py-3 font-semibold text-green-400">
                             {tx.amountUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} {tx.tokenSymbol || 'TRC20'}

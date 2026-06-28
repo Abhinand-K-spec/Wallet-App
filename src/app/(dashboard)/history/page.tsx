@@ -178,61 +178,62 @@ export default function HistoryPage() {
         <p className="text-gray-400 text-sm mt-1 font-sans">View all your deposits, withdrawals, and transactions</p>
       </div>
 
-      {/* Tab Selector */}
-      <div className="flex gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 w-fit">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${activeTab === tab.key
-              ? 'bg-indigo-600 text-white shadow-lg'
-              : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-              }`}
-          >
-            {tab.label} <span className="ml-1 text-xs opacity-70 font-mono">({tab.count})</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Date Filter */}
-      <div className="flex flex-wrap items-center gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Date:</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            value={startDate}
-            onChange={e => {
-              setStartDate(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
-          />
-          <span className="text-gray-600 text-xs">—</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={e => {
-              setEndDate(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
-          />
+      {/* Action Bar: Tabs & Date Filter */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-lg">
+        {/* Tab Selector */}
+        <div className="flex gap-1 bg-gray-950 border border-gray-850 rounded-xl p-1 w-full lg:w-auto overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${activeTab === tab.key
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
+            >
+              {tab.label} <span className="ml-1 text-xs opacity-70 font-mono">({tab.count})</span>
+            </button>
+          ))}
         </div>
 
-        {(startDate || endDate) && (
-          <button
-            onClick={() => {
-              setStartDate('');
-              setEndDate('');
-              setCurrentPage(1);
-            }}
-            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
-          >
-            Clear Filter
-          </button>
-        )}
+        {/* Date Filter */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Date Range:</span>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => {
+                setStartDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+            <span className="text-gray-650 text-xs">—</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => {
+                setEndDate(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+          </div>
+
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setCurrentPage(1);
+              }}
+              className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer w-full sm:w-auto"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </div>
 
       {/* All Transactions Tab */}

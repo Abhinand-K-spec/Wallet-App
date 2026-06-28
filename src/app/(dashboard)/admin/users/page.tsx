@@ -194,9 +194,10 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Filters UI */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+            {/* Search Input */}
+            <div className="lg:col-span-2 relative">
               <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
@@ -210,7 +211,8 @@ export default function AdminUsersPage() {
               />
             </div>
 
-            <div className="w-full md:w-48">
+            {/* Status Select */}
+            <div className="w-full">
               <select
                 value={statusFilter}
                 onChange={e => {
@@ -225,7 +227,8 @@ export default function AdminUsersPage() {
               </select>
             </div>
 
-            <div className="w-full md:w-48">
+            {/* Role Select */}
+            <div className="w-full">
               <select
                 value={roleFilter}
                 onChange={e => {
@@ -241,36 +244,36 @@ export default function AdminUsersPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-2 border-t border-gray-800/40">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Registration Date:</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={startDate}
-                onChange={e => {
-                  setStartDate(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
-              />
-              <span className="text-gray-600 text-xs">—</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={e => {
-                  setEndDate(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
-              />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-800/40">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Registration Date:</span>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => {
+                    setStartDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-gray-950 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+                />
+                <span className="text-gray-600 text-xs">—</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={e => {
+                    setEndDate(e.target.value);
+                    setPage(1);
+                  }}
+                  className="bg-gray-950 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+                />
+              </div>
             </div>
 
             {(search || statusFilter || roleFilter || startDate || endDate) && (
               <button
                 onClick={handleResetFilters}
-                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
+                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold rounded-xl transition-all cursor-pointer w-full sm:w-auto"
               >
                 Clear Filters
               </button>
