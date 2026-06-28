@@ -127,6 +127,10 @@ export default function HistoryPage() {
       updatedAt: w.updatedAt,
       method: w.method,
       utr: w.utr,
+      accountHolder: w.accountHolder,
+      accountNumber: w.accountNumber,
+      ifsc: w.ifsc,
+      walletAddress: w.walletAddress,
     })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -203,12 +207,26 @@ export default function HistoryPage() {
                               {tx.transactionType}
                             </span>
                             {tx.transactionType === 'WITHDRAWAL' && tx.method && (
-                              <span className={`text-[10px] font-semibold w-fit px-1.5 py-0.5 rounded border ${tx.method === 'USDT'
-                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                }`}>
-                                {tx.method === 'USDT' ? 'Wallet Transfer (USDT)' : 'Bank Transfer (INR)'}
-                              </span>
+                              <div className="space-y-1 mt-1">
+                                <span className={`text-[10px] font-semibold w-fit px-1.5 py-0.5 rounded border ${tx.method === 'USDT'
+                                  ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  }`}>
+                                  {tx.method === 'USDT' ? 'Wallet Transfer (USDT)' : 'Bank Transfer (INR)'}
+                                </span>
+                                {tx.method === 'USDT' ? (
+                                  <div className="text-[11px] text-gray-400 space-y-0.5">
+                                    <p className="font-semibold text-gray-300">{tx.accountHolder}</p>
+                                    <p className="font-mono text-gray-400 max-w-[150px] truncate" title={tx.walletAddress || ''}>{tx.walletAddress}</p>
+                                  </div>
+                                ) : (
+                                  <div className="text-[11px] text-gray-400 space-y-0.5">
+                                    <p className="font-semibold text-gray-300">{tx.accountHolder}</p>
+                                    <p>A/C: <span className="font-mono text-gray-350">{tx.accountNumber}</span></p>
+                                    <p>IFSC: <span className="font-mono text-gray-400">{tx.ifsc}</span></p>
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         </td>
@@ -314,6 +332,37 @@ export default function HistoryPage() {
                         </>
                       )}
                     </div>
+                    {tx.transactionType === 'WITHDRAWAL' && tx.method && (
+                      <div className="text-xs text-gray-400 space-y-1 bg-gray-950 p-2.5 rounded border border-gray-855">
+                        <div className="flex justify-between">
+                          <span className="text-[10px] text-gray-500">Name:</span>
+                          <span className="font-medium text-white">{tx.accountHolder}</span>
+                        </div>
+                        {tx.method === 'USDT' ? (
+                          tx.walletAddress && (
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-[10px] text-gray-500">Wallet:</span>
+                              <span className="font-mono text-gray-300 select-all max-w-[150px] truncate" title={tx.walletAddress}>{tx.walletAddress}</span>
+                            </div>
+                          )
+                        ) : (
+                          <>
+                            {tx.accountNumber && (
+                              <div className="flex justify-between items-center text-[11px]">
+                                <span className="text-[10px] text-gray-500">Account:</span>
+                                <span className="font-mono text-gray-300 select-all">{tx.accountNumber}</span>
+                              </div>
+                            )}
+                            {tx.ifsc && (
+                              <div className="flex justify-between items-center text-[11px]">
+                                <span className="text-[10px] text-gray-500">IFSC:</span>
+                                <span className="font-mono text-gray-350 select-all">{tx.ifsc}</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                     {tx.utr && (
                       <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-855 font-mono text-indigo-400 break-all select-all">
                         TxID/UTR: {tx.utr}
