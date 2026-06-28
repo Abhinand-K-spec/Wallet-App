@@ -45,7 +45,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none hidden md:block" />
 
       {/* Sidebar (Desktop) */}
-      <aside className="w-64 bg-gray-900/60 backdrop-blur-xl border-r border-gray-800/80 flex flex-col hidden md:flex shrink-0 relative z-30">
+      <aside className="w-64 bg-gray-900/60 backdrop-blur-xl border-r border-gray-800/80 flex flex-col hidden md:flex shrink-0 relative z-10">
         <div className="h-16 flex items-center px-6 border-b border-gray-800/80">
           <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/20 border border-indigo-400/20 mr-2.5">
             <Wallet className="w-4.5 h-4.5 text-white" />
@@ -179,7 +179,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-20">
         {/* Mobile Header */}
         <header className="md:hidden h-16 border-b border-gray-800/80 bg-gray-900/95 flex items-center justify-between px-4 z-40 shrink-0">
           <div className="flex items-center gap-2">

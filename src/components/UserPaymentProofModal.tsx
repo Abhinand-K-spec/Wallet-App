@@ -128,59 +128,72 @@ export default function UserPaymentProofModal({
                       </span>
                     </div>
                     
-                    <div className="overflow-x-auto w-full pb-2">
-                      <p className="text-[10px] text-gray-500 mb-2 md:hidden flex items-center justify-center gap-1 select-none">
-                        ← Swipe horizontally to view full details →
-                      </p>
-                      <table className={`w-full text-left text-sm border-collapse ${isBankTransfer ? 'min-w-[800px]' : 'min-w-[500px]'}`}>
+                    <div className="w-full overflow-hidden">
+                      <table className="w-full text-left text-[8px] xs:text-[10px] sm:text-xs md:text-sm border-collapse">
                         <thead>
                           <tr className="border-b border-gray-800 text-gray-400">
-                            <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">TxID / UTR</th>
+                            <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">UTR / TxID</th>
                             {isBankTransfer && (
                               <>
-                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Beneficiary Name</th>
-                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Account Number</th>
-                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">IFSC Code</th>
+                                <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">Beneficiary</th>
+                                <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">Account No</th>
+                                <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">IFSC</th>
                               </>
                             )}
                             {!isBankTransfer && (
-                              <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Amount (USDT)</th>
+                              <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">Amount (USDT)</th>
                             )}
                             {(isBankTransfer || details?.amountINR) && (
-                              <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Amount (INR)</th>
+                              <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans whitespace-nowrap">Amount</th>
                             )}
-                            <th className="py-2.5 px-4 font-medium font-sans text-right whitespace-nowrap">Processed Time</th>
+                            <th className="py-1 px-1 sm:py-2 sm:px-3 font-medium font-sans text-right whitespace-nowrap">Date</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr className="text-white hover:bg-gray-800/10 transition-colors">
-                            <td className="py-4 px-4 font-mono text-indigo-400 text-xs select-all min-w-[150px]">
+                            <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-indigo-400 select-all truncate max-w-[65px] xs:max-w-[85px] sm:max-w-[150px]" title={details?.utr}>
                               {details?.utr || '—'}
                             </td>
                             {isBankTransfer && (
                               <>
-                                <td className="py-4 px-4 font-sans text-gray-200 whitespace-nowrap">{details?.accountHolder || '—'}</td>
-                                <td className="py-4 px-4 font-mono text-gray-200 select-all whitespace-nowrap">{details?.accountNumber || '—'}</td>
-                                <td className="py-4 px-4 font-mono text-gray-200 select-all whitespace-nowrap">{details?.ifsc || '—'}</td>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-sans text-gray-200 truncate max-w-[60px] xs:max-w-[80px] sm:max-w-[120px]" title={details?.accountHolder}>
+                                  {details?.accountHolder || '—'}
+                                </td>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all truncate max-w-[70px] xs:max-w-[90px] sm:max-w-[130px]" title={details?.accountNumber}>
+                                  {details?.accountNumber || '—'}
+                                </td>
+                                <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 select-all truncate max-w-[50px] xs:max-w-[70px] sm:max-w-[100px]" title={details?.ifsc}>
+                                  {details?.ifsc || '—'}
+                                </td>
                               </>
                             )}
                             {!isBankTransfer && (
-                              <td className="py-4 px-4 font-mono text-gray-200 whitespace-nowrap">
+                              <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 whitespace-nowrap">
                                 ${details?.amountUSD?.toFixed(4) || '—'}
                               </td>
                             )}
                             {(isBankTransfer || details?.amountINR) && (
-                              <td className="py-4 px-4 font-mono text-gray-200 whitespace-nowrap">
+                              <td className="py-2 px-1 sm:py-3 sm:px-3 font-mono text-gray-200 whitespace-nowrap font-bold text-emerald-400">
                                 ₹{details?.amountINR?.toLocaleString('en-IN') || '—'}
                               </td>
                             )}
-                            <td className="py-4 px-4 text-right text-gray-500 text-xs font-sans whitespace-nowrap">
-                              {details?.updatedAt ? new Date(details.updatedAt).toLocaleString() : '—'}
+                            <td className="py-2 px-1 sm:py-3 sm:px-3 text-right text-gray-500 font-sans whitespace-nowrap text-[7px] xs:text-[9px] sm:text-xs">
+                              {details?.updatedAt ? (
+                                <>
+                                  <span className="hidden sm:inline">
+                                    {new Date(details.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </span>
+                                  <span className="sm:hidden">
+                                    {new Date(details.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                  </span>
+                                </>
+                              ) : '—'}
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
+
 
                   </div>
                 </div>
