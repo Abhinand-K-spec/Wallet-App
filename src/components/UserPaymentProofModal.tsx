@@ -128,56 +128,60 @@ export default function UserPaymentProofModal({
                       </span>
                     </div>
                     
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm border-collapse">
+                    <div className="overflow-x-auto w-full pb-2">
+                      <p className="text-[10px] text-gray-500 mb-2 md:hidden flex items-center justify-center gap-1 select-none">
+                        ← Swipe horizontally to view full details →
+                      </p>
+                      <table className={`w-full text-left text-sm border-collapse ${isBankTransfer ? 'min-w-[800px]' : 'min-w-[500px]'}`}>
                         <thead>
                           <tr className="border-b border-gray-800 text-gray-400">
-                            <th className="py-2.5 px-4 font-medium font-sans">TxID / UTR</th>
+                            <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">TxID / UTR</th>
                             {isBankTransfer && (
                               <>
-                                <th className="py-2.5 px-4 font-medium font-sans">Beneficiary Name</th>
-                                <th className="py-2.5 px-4 font-medium font-sans">Account Number</th>
-                                <th className="py-2.5 px-4 font-medium font-sans">IFSC Code</th>
+                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Beneficiary Name</th>
+                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Account Number</th>
+                                <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">IFSC Code</th>
                               </>
                             )}
                             {!isBankTransfer && (
-                              <th className="py-2.5 px-4 font-medium font-sans">Amount (USDT)</th>
+                              <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Amount (USDT)</th>
                             )}
                             {(isBankTransfer || details?.amountINR) && (
-                              <th className="py-2.5 px-4 font-medium font-sans">Amount (INR)</th>
+                              <th className="py-2.5 px-4 font-medium font-sans whitespace-nowrap">Amount (INR)</th>
                             )}
-                            <th className="py-2.5 px-4 font-medium font-sans text-right">Processed Time</th>
+                            <th className="py-2.5 px-4 font-medium font-sans text-right whitespace-nowrap">Processed Time</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr className="text-white hover:bg-gray-800/10 transition-colors">
-                            <td className="py-4 px-4 font-mono text-indigo-400 text-xs break-all select-all">
+                            <td className="py-4 px-4 font-mono text-indigo-400 text-xs select-all min-w-[150px]">
                               {details?.utr || '—'}
                             </td>
                             {isBankTransfer && (
                               <>
-                                <td className="py-4 px-4 font-sans text-gray-200">{details?.accountHolder || '—'}</td>
-                                <td className="py-4 px-4 font-mono text-gray-200 select-all">{details?.accountNumber || '—'}</td>
-                                <td className="py-4 px-4 font-mono text-gray-200 select-all">{details?.ifsc || '—'}</td>
+                                <td className="py-4 px-4 font-sans text-gray-200 whitespace-nowrap">{details?.accountHolder || '—'}</td>
+                                <td className="py-4 px-4 font-mono text-gray-200 select-all whitespace-nowrap">{details?.accountNumber || '—'}</td>
+                                <td className="py-4 px-4 font-mono text-gray-200 select-all whitespace-nowrap">{details?.ifsc || '—'}</td>
                               </>
                             )}
                             {!isBankTransfer && (
-                              <td className="py-4 px-4 font-mono text-gray-200">
+                              <td className="py-4 px-4 font-mono text-gray-200 whitespace-nowrap">
                                 ${details?.amountUSD?.toFixed(4) || '—'}
                               </td>
                             )}
                             {(isBankTransfer || details?.amountINR) && (
-                              <td className="py-4 px-4 font-mono text-gray-200">
+                              <td className="py-4 px-4 font-mono text-gray-200 whitespace-nowrap">
                                 ₹{details?.amountINR?.toLocaleString('en-IN') || '—'}
                               </td>
                             )}
-                            <td className="py-4 px-4 text-right text-gray-500 text-xs font-sans">
+                            <td className="py-4 px-4 text-right text-gray-500 text-xs font-sans whitespace-nowrap">
                               {details?.updatedAt ? new Date(details.updatedAt).toLocaleString() : '—'}
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
+
                   </div>
                 </div>
               );
