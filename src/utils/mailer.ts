@@ -1,44 +1,64 @@
 import nodemailer from 'nodemailer';
 
-const host = process.env.SMTP_HOST;
-const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587;
-const user = process.env.SMTP_USER;
-const pass = process.env.SMTP_PASS;
+// Helper to get env variables, handling both standard and process.env. prefixed keys
+const getEnv = (key: string): string | undefined => {
+  return process.env[key] || process.env[`process.env.${key}`];
+};
 
-let transporter: nodemailer.Transporter | null = null;
+const getMailerTransporter = (): nodemailer.Transporter | null => {
+  const host = getEnv('SMTP_HOST') || 'smtp.gmail.com';
+  const port = parseInt(getEnv('SMTP_PORT') || '465', 10);
+  const user = getEnv('SMTP_USER');
+  const pass = getEnv('SMTP_PASS');
 
-if (host && user && pass) {
-  transporter = nodemailer.createTransport({
+  if (!user || !pass) {
+    console.warn('[MAILER] Missing SMTP_USER or SMTP_PASS. Mailer will fallback to mock logging.');
+    return null;
+  }
+
+  return nodemailer.createTransport({
     host,
     port,
-    secure: port === 465, // true for 465, false for other ports
+    secure: port === 465,
     auth: {
       user,
       pass,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
-}
+};
 
 export async function sendOtpEmail(email: string, otp: string): Promise<boolean> {
+  const user = getEnv('SMTP_USER') || 'security@getpayspace.in';
+  
   const mailOptions = {
-    from: `"GetPay Security" <${user || 'security@getpayspace.in'}>`,
+    from: `"GetPay Security" <${user}>`,
     to: email,
     subject: 'Confirm your registration - OTP Code',
     html: `
-      <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded-xl: 16px;">
-        <h2 style="color: #4f46e5; text-align: center; margin-bottom: 24px;">Verify Your Email</h2>
-        <p style="font-size: 14px; color: #374151; line-height: 1.5;">
-          Thank you for signing up for GetPay. Please enter the following 6-digit verification code to complete your registration:
-        </p>
-        <div style="background-color: #f3f4f6; border-radius: 12px; padding: 16px; margin: 24px 0; text-align: center;">
-          <span style="font-size: 32px; font-weight: bold; font-family: monospace; letter-spacing: 4px; color: #111827;">${otp}</span>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; border: 1px solid #f3f4f6; border-radius: 24px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #4f46e5; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.025em;">Verify Your Email</h2>
+          <p style="font-size: 14px; color: #4b5563; margin-top: 8px; line-height: 1.5;">
+            Confirm your registration code below to verify your email.
+          </p>
         </div>
-        <p style="font-size: 12px; color: #6b7280; text-align: center; margin-top: 24px;">
-          This code is valid for 5 minutes. If you did not request this code, please ignore this email.
+        
+        <div style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center; border: 1px solid #ddd6fe;">
+          <span style="font-size: 36px; font-weight: 800; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 6px; color: #4f46e5;">${otp}</span>
+        </div>
+        
+        <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 24px 0 0 0; line-height: 1.5;">
+          This verification code is valid for 5 minutes.<br />
+          If you did not request this verification, please ignore this email safely.
         </p>
       </div>
     `,
   };
+
+  const transporter = getMailerTransporter();
 
   if (transporter) {
     try {
