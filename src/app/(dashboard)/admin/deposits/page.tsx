@@ -265,6 +265,8 @@ export default function AdminDepositsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [processedPage, setProcessedPage] = useState(1);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const processedLimit = 10;
   const dispatch = useDispatch();
 
@@ -317,8 +319,27 @@ export default function AdminDepositsPage() {
 
   if (loading) return <div className="text-gray-400 p-8 font-sans">Loading deposits...</div>;
 
-  const pendingDeposits = deposits.filter(d => d.status === 'PENDING');
-  const processedDeposits = deposits.filter(d => d.status !== 'PENDING');
+  const filterByDate = <T extends { createdAt: string }>(items: T[]) => {
+    return items.filter(item => {
+      if (!item.createdAt) return true;
+      const dateVal = new Date(item.createdAt).getTime();
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (dateVal < start.getTime()) return false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (dateVal > end.getTime()) return false;
+      }
+      return true;
+    });
+  };
+
+  const filteredDeposits = filterByDate(deposits);
+  const pendingDeposits = filteredDeposits.filter(d => d.status === 'PENDING');
+  const processedDeposits = filteredDeposits.filter(d => d.status !== 'PENDING');
   const processedTotalPages = Math.ceil(processedDeposits.length / processedLimit);
   const paginatedProcessedDeposits = processedDeposits.slice(
     (processedPage - 1) * processedLimit,
@@ -330,6 +351,47 @@ export default function AdminDepositsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Verify Deposits</h1>
           <p className="text-gray-400 text-sm mt-1">Review and approve user crypto deposit submissions</p>
+        </div>
+
+        {/* Date Filter */}
+        <div className="flex flex-wrap items-center gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Deposits Date:</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => {
+                setStartDate(e.target.value);
+                setProcessedPage(1);
+              }}
+              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+            <span className="text-gray-600 text-xs">—</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => {
+                setEndDate(e.target.value);
+                setProcessedPage(1);
+              }}
+              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+          </div>
+
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setProcessedPage(1);
+              }}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
+            >
+              Clear Filter
+            </button>
+          )}
         </div>
 
         {/* Pending Deposits */}

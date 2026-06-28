@@ -46,6 +46,8 @@ export default function AdminWithdrawalsPage() {
   const [completedPage, setCompletedPage] = useState(1);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
   const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const completedLimit = 10;
   
   const dispatch = useDispatch();
@@ -221,9 +223,28 @@ export default function AdminWithdrawalsPage() {
     );
   }
 
-  const pendingWithdrawals = withdrawals.filter(w => w.status === 'PENDING');
-  const approvedWithdrawals = withdrawals.filter(w => w.status === 'APPROVED');
-  const completedWithdrawals = withdrawals.filter(w => ['PAID', 'REJECTED'].includes(w.status));
+  const filterByDate = <T extends { createdAt: string }>(items: T[]) => {
+    return items.filter(item => {
+      if (!item.createdAt) return true;
+      const dateVal = new Date(item.createdAt).getTime();
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (dateVal < start.getTime()) return false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (dateVal > end.getTime()) return false;
+      }
+      return true;
+    });
+  };
+
+  const filteredWithdrawals = filterByDate(withdrawals);
+  const pendingWithdrawals = filteredWithdrawals.filter(w => w.status === 'PENDING');
+  const approvedWithdrawals = filteredWithdrawals.filter(w => w.status === 'APPROVED');
+  const completedWithdrawals = filteredWithdrawals.filter(w => ['PAID', 'REJECTED'].includes(w.status));
   const completedTotalPages = Math.ceil(completedWithdrawals.length / completedLimit);
   const paginatedCompletedWithdrawals = completedWithdrawals.slice(
     (completedPage - 1) * completedLimit,
@@ -235,6 +256,47 @@ export default function AdminWithdrawalsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Manage Withdrawals</h1>
           <p className="text-gray-400 text-sm mt-1">Approve, reject, or mark withdrawal requests as paid</p>
+        </div>
+
+        {/* Date Filter */}
+        <div className="flex flex-wrap items-center gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Withdrawals Date:</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={startDate}
+              onChange={e => {
+                setStartDate(e.target.value);
+                setCompletedPage(1);
+              }}
+              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+            <span className="text-gray-600 text-xs">—</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => {
+                setEndDate(e.target.value);
+                setCompletedPage(1);
+              }}
+              className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+            />
+          </div>
+
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setCompletedPage(1);
+              }}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
+            >
+              Clear Filter
+            </button>
+          )}
         </div>
 
         {/* Pending Withdrawals */}
@@ -635,9 +697,12 @@ export default function AdminWithdrawalsPage() {
                         )}
                       </div>
                       {w.utr && (
-                        <div className="flex flex-col pt-2 border-t border-gray-900 text-[11px] text-gray-400">
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-900 text-[11px] text-gray-400">
                           <span>UTR / TxID:</span>
-                          <span className="font-mono text-indigo-400 break-all select-all mt-0.5">{w.utr}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono text-indigo-400 break-all select-all">{w.utr}</span>
+                            <CopyButton text={w.utr} />
+                          </div>
                         </div>
                       )}
                     </div>

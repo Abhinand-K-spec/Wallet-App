@@ -46,6 +46,8 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   
   // History Modal State
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
@@ -76,6 +78,8 @@ export default function AdminUsersPage() {
         if (search) queryParams.append('search', search);
         if (statusFilter) queryParams.append('status', statusFilter);
         if (roleFilter) queryParams.append('role', roleFilter);
+        if (startDate) queryParams.append('startDate', startDate);
+        if (endDate) queryParams.append('endDate', endDate);
 
         const res = await api.get(`/admin/users?${queryParams.toString()}`);
         if (active) {
@@ -102,7 +106,7 @@ export default function AdminUsersPage() {
       active = false;
       clearTimeout(timer);
     };
-  }, [page, search, statusFilter, roleFilter, refreshKey, dispatch]);
+  }, [page, search, statusFilter, roleFilter, startDate, endDate, refreshKey, dispatch]);
 
   const handleToggleStatus = async (userId: string) => {
     if (userId === currentAdmin?.id) {
@@ -128,6 +132,8 @@ export default function AdminUsersPage() {
     setSearch('');
     setStatusFilter('');
     setRoleFilter('');
+    setStartDate('');
+    setEndDate('');
     setPage(1);
   };
 
@@ -233,11 +239,38 @@ export default function AdminUsersPage() {
                 <option value="ADMIN">Admin</option>
               </select>
             </div>
+          </div>
 
-            {(search || statusFilter || roleFilter) && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-2 border-t border-gray-800/40">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Registration Date:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => {
+                  setStartDate(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+              />
+              <span className="text-gray-600 text-xs">—</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => {
+                  setEndDate(e.target.value);
+                  setPage(1);
+                }}
+                className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+              />
+            </div>
+
+            {(search || statusFilter || roleFilter || startDate || endDate) && (
               <button
                 onClick={handleResetFilters}
-                className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-sm font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer"
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
               >
                 Clear Filters
               </button>

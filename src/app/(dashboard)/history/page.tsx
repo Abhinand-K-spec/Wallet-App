@@ -74,6 +74,8 @@ export default function HistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const itemsPerPage = 10;
 
   const dispatch = useDispatch();
@@ -105,8 +107,29 @@ export default function HistoryPage() {
 
   if (loading) return <div className="text-gray-400 p-8 font-sans">Loading history...</div>;
 
+  const filterByDate = <T extends { createdAt: string }>(items: T[]) => {
+    return items.filter(item => {
+      if (!item.createdAt) return true;
+      const dateVal = new Date(item.createdAt).getTime();
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (dateVal < start.getTime()) return false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (dateVal > end.getTime()) return false;
+      }
+      return true;
+    });
+  };
+
+  const filteredDeposits = filterByDate(deposits);
+  const filteredWithdrawals = filterByDate(withdrawals);
+
   const combinedTransactions = [
-    ...deposits.map((d) => ({
+    ...filteredDeposits.map((d) => ({
       id: d.id,
       transactionType: 'DEPOSIT',
       amountUSD: d.amountUSD,
@@ -117,7 +140,7 @@ export default function HistoryPage() {
       method: null,
       utr: d.txHash,
     })),
-    ...withdrawals.map((w) => ({
+    ...filteredWithdrawals.map((w) => ({
       id: w.id,
       transactionType: 'WITHDRAWAL',
       amountUSD: w.amountUSD,
@@ -135,17 +158,17 @@ export default function HistoryPage() {
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const paginatedTransactions = combinedTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const paginatedDeposits = deposits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const paginatedWithdrawals = withdrawals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedDeposits = filteredDeposits.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedWithdrawals = filteredWithdrawals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const totalPagesAll = Math.ceil(combinedTransactions.length / itemsPerPage);
-  const totalPagesDeposits = Math.ceil(deposits.length / itemsPerPage);
-  const totalPagesWithdrawals = Math.ceil(withdrawals.length / itemsPerPage);
+  const totalPagesDeposits = Math.ceil(filteredDeposits.length / itemsPerPage);
+  const totalPagesWithdrawals = Math.ceil(filteredWithdrawals.length / itemsPerPage);
 
-  const tabs: { key: TabType; label: string; count: number }[] = [
+   const tabs: { key: TabType; label: string; count: number }[] = [
     { key: 'all', label: 'All Transactions', count: combinedTransactions.length },
-    { key: 'deposits', label: 'Deposits', count: deposits.length },
-    { key: 'withdrawals', label: 'Withdrawals', count: withdrawals.length },
+    { key: 'deposits', label: 'Deposits', count: filteredDeposits.length },
+    { key: 'withdrawals', label: 'Withdrawals', count: filteredWithdrawals.length },
   ];
 
   return (
@@ -171,6 +194,47 @@ export default function HistoryPage() {
         ))}
       </div>
 
+      {/* Date Filter */}
+      <div className="flex flex-wrap items-center gap-3 bg-gray-900 border border-gray-800 p-4 rounded-2xl shadow-lg">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Filter Date:</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={startDate}
+            onChange={e => {
+              setStartDate(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+          />
+          <span className="text-gray-600 text-xs">—</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={e => {
+              setEndDate(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer [color-scheme:dark]"
+          />
+        </div>
+
+        {(startDate || endDate) && (
+          <button
+            onClick={() => {
+              setStartDate('');
+              setEndDate('');
+              setCurrentPage(1);
+            }}
+            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded-xl transition-colors text-gray-300 cursor-pointer sm:ml-auto"
+          >
+            Clear Filter
+          </button>
+        )}
+      </div>
+
       {/* All Transactions Tab */}
       {activeTab === 'all' && (
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg">
@@ -184,7 +248,7 @@ export default function HistoryPage() {
             <div>
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-sm border-collapse">
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Type</th>
@@ -196,7 +260,7 @@ export default function HistoryPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {paginatedTransactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-gray-800/20 transition-colors">
+                      <tr key={tx.id} className="border-b border-gray-800 hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium w-fit ${tx.transactionType === 'DEPOSIT' ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
@@ -448,7 +512,7 @@ export default function HistoryPage() {
             <div>
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-sm border-collapse">
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Tx Hash</th>
@@ -460,7 +524,7 @@ export default function HistoryPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {paginatedDeposits.map((d) => (
-                      <tr key={d.id} className="hover:bg-gray-800/20 transition-colors">
+                      <tr key={d.id} className="border-b border-gray-800 hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{d.txHash}</td>
                         <td className="px-6 py-4 font-medium text-white">${d.amountUSD.toFixed(4)}</td>
                         <td className="px-6 py-4 text-gray-300">{d.equivalentINR ? `₹${d.equivalentINR.toLocaleString('en-IN')}` : '—'}</td>
@@ -555,7 +619,7 @@ export default function HistoryPage() {
             <div>
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-sm border-collapse">
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Method</th>
@@ -569,7 +633,7 @@ export default function HistoryPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {paginatedWithdrawals.map((w) => (
-                      <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
+                      <tr key={w.id} className="border-b border-gray-800 hover:bg-gray-800/20 transition-colors">
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border ${w.method === 'USDT'
                             ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'

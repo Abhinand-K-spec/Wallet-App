@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const status = searchParams.get('status');
     const role = searchParams.get('role');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '10';
 
@@ -56,6 +58,14 @@ export async function GET(request: NextRequest) {
     }
     if (search) {
       query = query.or(`email.ilike.%${search}%,user_id.ilike.%${search}%`);
+    }
+    if (startDate) {
+      query = query.gte('created_at', new Date(startDate).toISOString());
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      query = query.lte('created_at', end.toISOString());
     }
 
     // Apply ordering & pagination
