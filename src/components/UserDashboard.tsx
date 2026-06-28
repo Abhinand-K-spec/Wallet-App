@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowDownToLine, ArrowUpFromLine, Activity, Wallet, Plus, ArrowUpRight, History, AlertTriangle, Loader2, X, ShieldCheck } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Activity, Wallet, Plus, ArrowUpRight, History, AlertTriangle, Loader2, X, ShieldCheck, FileText } from 'lucide-react';
 import { useExchangeRate } from '@/context/ExchangeRateContext';
+import UserPaymentProofModal from '@/components/UserPaymentProofModal';
 
 interface Deposit {
   id: string;
@@ -60,6 +61,8 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [isProofModalOpen, setIsProofModalOpen] = useState(false);
   const { exchangeRate: inrRate } = useExchangeRate();
 
   useEffect(() => {
@@ -287,9 +290,22 @@ const UserDashboard = () => {
                           {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={statusBadge(tx.status)}>
-                            {tx.status}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className={statusBadge(tx.status)}>
+                              {tx.status}
+                            </span>
+                            {tx.transactionType === 'WITHDRAWAL' && ['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                              <button
+                                onClick={() => {
+                                  setSelectedRequestId(tx.reference || tx.id);
+                                  setIsProofModalOpen(true);
+                                }}
+                                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 mt-1.5 cursor-pointer transition-colors w-fit border border-indigo-500/20 bg-indigo-500/5 px-2 py-0.5 rounded animate-fade-in"
+                              >
+                                <FileText className="w-3 h-3" /> View Receipt
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-gray-500">
                           {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -342,6 +358,17 @@ const UserDashboard = () => {
                         {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                     </div>
+                    {tx.transactionType === 'WITHDRAWAL' && ['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
+                      <button
+                        onClick={() => {
+                          setSelectedRequestId(tx.reference || tx.id);
+                          setIsProofModalOpen(true);
+                        }}
+                        className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center gap-1 mt-2 cursor-pointer transition-colors border border-indigo-500/20 bg-indigo-500/5 px-3 py-1.5 rounded-lg w-full animate-fade-in"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> View Receipt
+                      </button>
+                    )}
                   </div>
                 );
                 })}
@@ -355,7 +382,13 @@ const UserDashboard = () => {
             </div>
           )}
         </div>
-    </div>
+      </div>
+      
+      <UserPaymentProofModal
+        isOpen={isProofModalOpen}
+        onClose={() => setIsProofModalOpen(false)}
+        paymentRequestId={selectedRequestId || ''}
+      />
     </div>
   );
 };
