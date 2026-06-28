@@ -303,45 +303,49 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-gray-800 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        <th className="pb-3 pl-2">Hash</th>
-                        <th className="pb-3">From</th>
-                        <th className="pb-3">Amount</th>
-                        <th className="pb-3 pr-2 text-right">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-800/50 text-sm">
-                      {currentTxs.map((tx) => (
-                        <tr key={tx.hash} className="hover:bg-gray-800/20 transition-colors group">
-                          <td className="py-3 pl-2 font-mono text-[10px] text-indigo-400 group-hover:text-indigo-350 select-all leading-normal">
-                            <a
-                              href={`https://tronscan.org/#/transaction/${tx.hash}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block break-all max-w-[120px] md:max-w-[180px] hover:underline cursor-pointer"
-                              title="View on Tronscan"
-                            >
-                              {tx.hash}
-                            </a>
-                          </td>
-                          <td className="py-3 font-mono text-[10px] text-gray-400 select-all leading-normal">
-                            <span className="block break-all max-w-[100px] md:max-w-[150px]" title={tx.from || ''}>
-                              {tx.from || '—'}
-                            </span>
-                          </td>
-                          <td className="py-3 font-semibold text-green-400">
+                <div className="space-y-4">
+                  {currentTxs.map((tx) => (
+                    <div key={tx.hash} className="bg-gray-950 border border-gray-850 rounded-2xl p-4 shadow-md hover:border-gray-800 transition-all group">
+                      {/* Row 1: Tx Hash */}
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Transaction Hash</span>
+                        <a
+                          href={`https://tronscan.org/#/transaction/${tx.hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-indigo-400 hover:text-indigo-350 hover:underline break-all select-all flex items-center justify-between gap-1.5"
+                          title="View on Tronscan"
+                        >
+                          <span className="break-all">{tx.hash}</span>
+                          <ExternalLink className="w-3.5 h-3.5 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        </a>
+                      </div>
+
+                      {/* Row 2: From Address */}
+                      <div className="flex flex-col gap-0.5 mt-3 pt-3 border-t border-gray-900/60">
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Sender (From)</span>
+                        <span className="font-mono text-xs text-gray-400 break-all select-all">
+                          {tx.from || '—'}
+                        </span>
+                      </div>
+
+                      {/* Row 3: Amount & Date (2 columns) */}
+                      <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-900/60 items-end">
+                        <div>
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Amount</span>
+                          <span className="font-semibold text-green-400 text-sm">
                             {tx.amountUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} {tx.tokenSymbol || 'TRC20'}
-                          </td>
-                          <td className="py-3 pr-2 text-right text-xs text-gray-500">
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Date</span>
+                          <span className="text-xs text-gray-500">
                             {new Date(tx.timestamp).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Pagination Controls */}
