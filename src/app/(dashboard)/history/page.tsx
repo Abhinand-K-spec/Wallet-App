@@ -23,6 +23,9 @@ interface Withdrawal {
   amountINR: number;
   method: string;
   accountHolder: string;
+  accountNumber?: string | null;
+  ifsc?: string | null;
+  walletAddress?: string | null;
   status: string;
   utr: string | null;
   createdAt: string;
@@ -496,9 +499,8 @@ export default function HistoryPage() {
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
                       <th className="px-6 py-4 font-medium">Method</th>
-                      <th className="px-6 py-4 font-medium">Holder</th>
-                      <th className="px-6 py-4 font-medium">USDT</th>
-                      <th className="px-6 py-4 font-medium">INR</th>
+                      <th className="px-6 py-4 font-medium">Beneficiary / Details</th>
+                      <th className="px-6 py-4 font-medium">Amount</th>
                       <th className="px-6 py-4 font-medium">UTR / TxID</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium">Requested</th>
@@ -516,11 +518,33 @@ export default function HistoryPage() {
                             {w.method === 'USDT' ? 'Wallet (USDT)' : 'Bank (INR)'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
-                        <td className="px-6 py-4 font-medium text-white">
-                           {w.method === 'BANK' ? '—' : `$${w.amountUSD.toFixed(4)}`}
-                         </td>
-                        <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
+                        <td className="px-6 py-4 text-gray-300">
+                          {w.method === 'USDT' ? (
+                            <div className="space-y-0.5">
+                              <p className="font-semibold text-white">{w.accountHolder}</p>
+                              <p className="text-[11px] font-mono text-gray-400 select-all max-w-[200px] truncate" title={w.walletAddress || ''}>
+                                {w.walletAddress || '—'}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-0.5">
+                              <p className="font-semibold text-white">{w.accountHolder}</p>
+                              <p className="text-xs font-mono text-gray-400">
+                                A/C: <span className="select-all text-gray-350">{w.accountNumber || '—'}</span>
+                              </p>
+                              <p className="text-[11px] font-mono text-gray-500">
+                                IFSC: <span className="select-all text-gray-450">{w.ifsc || '—'}</span>
+                              </p>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold">
+                          {w.method === 'USDT' ? (
+                            <span className="text-white">${w.amountUSD.toFixed(4)} USDT</span>
+                          ) : (
+                            <span className="text-emerald-400">₹{w.amountINR.toLocaleString('en-IN')}</span>
+                          )}
+                        </td>
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{w.utr || '—'}</td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
@@ -577,22 +601,54 @@ export default function HistoryPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <div>
-                        <p className="text-[10px] text-gray-500">USDT Amount</p>
-                        <p className="font-bold text-white font-mono">
-                           {w.method === 'BANK' ? '—' : `$${w.amountUSD.toFixed(4)}`}
-                         </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-gray-500">INR Amount</p>
-                        <p className="font-bold text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
-                      </div>
+                      {w.method === 'USDT' ? (
+                        <div>
+                          <p className="text-[10px] text-gray-500">USDT Amount</p>
+                          <p className="font-bold text-white font-mono">
+                            ${w.amountUSD.toFixed(4)}
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-[10px] text-gray-500">INR Amount</p>
+                          <p className="font-bold text-emerald-400 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
+                        </div>
+                      )}
+                      {w.method === 'USDT' && (
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-500">INR Value</p>
+                          <p className="font-bold text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</p>
+                        </div>
+                      )}
                     </div>
                     <div className="text-xs text-gray-400 space-y-1 bg-gray-950 p-2.5 rounded border border-gray-855">
                       <div className="flex justify-between">
-                        <span className="text-[10px] text-gray-500">Beneficiary:</span>
+                        <span className="text-[10px] text-gray-500">Name:</span>
                         <span className="font-medium text-white">{w.accountHolder}</span>
                       </div>
+                      {w.method === 'USDT' ? (
+                        w.walletAddress && (
+                          <div className="flex justify-between items-center text-[11px]">
+                            <span className="text-[10px] text-gray-500">Wallet:</span>
+                            <span className="font-mono text-gray-300 select-all max-w-[150px] truncate" title={w.walletAddress}>{w.walletAddress}</span>
+                          </div>
+                        )
+                      ) : (
+                        <>
+                          {w.accountNumber && (
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-[10px] text-gray-500">Account:</span>
+                              <span className="font-mono text-gray-300 select-all">{w.accountNumber}</span>
+                            </div>
+                          )}
+                          {w.ifsc && (
+                            <div className="flex justify-between items-center text-[11px]">
+                              <span className="text-[10px] text-gray-500">IFSC:</span>
+                              <span className="font-mono text-gray-350 select-all">{w.ifsc}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
                       {w.utr && (
                         <div className="flex flex-col font-mono text-[10px] text-indigo-400 select-all pt-1 border-t border-gray-800/40">
                           <span className="text-[9px] text-gray-500">UTR / TxID:</span>
