@@ -268,8 +268,10 @@ const UserDashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-800/50">
                     {profile.transactions.slice(0, 5).map((tx: Transaction) => {
-                      const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' &&
-                        profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK';
+                      const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' && (
+                        profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK' ||
+                        profile.withdrawals?.find(w => Math.abs(w.amountUSD - tx.amountUSD) < 0.001)?.method === 'BANK'
+                      );
                       
                       return (
                         <tr key={tx.id} className="hover:bg-gray-800/10 transition-colors">
@@ -320,8 +322,10 @@ const UserDashboard = () => {
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-850">
                 {profile.transactions.slice(0, 5).map((tx: Transaction) => {
-                  const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' &&
-                    profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK';
+                  const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' && (
+                    profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK' ||
+                    profile.withdrawals?.find(w => Math.abs(w.amountUSD - tx.amountUSD) < 0.001)?.method === 'BANK'
+                  );
                   
                   return (
                     <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">

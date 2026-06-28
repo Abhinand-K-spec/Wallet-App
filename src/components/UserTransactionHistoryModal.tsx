@@ -100,6 +100,8 @@ export default function UserTransactionHistoryModal({
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>([]);
   const [activeTab, setActiveTab] = useState<'ledger' | 'deposits' | 'withdrawals'>('ledger');
   const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     if (isOpen && user) {
@@ -110,6 +112,8 @@ export default function UserTransactionHistoryModal({
       setWithdrawals([]);
       setActiveTab('ledger');
       setSearchQuery('');
+      setStartDate('');
+      setEndDate('');
 
       const fetchHistory = async () => {
         try {
@@ -132,39 +136,62 @@ export default function UserTransactionHistoryModal({
 
   if (!isOpen || !user) return null;
 
-  // Calculators for Stats (using approved / success statuses only)
-  const totalDepositsUSD = deposits
+  // Date filtering helper
+  const filterByDate = <T extends { createdAt: string }>(items: T[]) => {
+    return items.filter(item => {
+      if (!item.createdAt) return true;
+      const dateVal = new Date(item.createdAt).getTime();
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (dateVal < start.getTime()) return false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (dateVal > end.getTime()) return false;
+      }
+      return true;
+    });
+  };
+
+  const dateFilteredTransactions = filterByDate(transactions);
+  const dateFilteredDeposits = filterByDate(deposits);
+  const dateFilteredWithdrawals = filterByDate(withdrawals);
+
+  // Calculators for Stats (using approved / success statuses only, from the date-filtered lists!)
+  const totalDepositsUSD = dateFilteredDeposits
     .filter(d => ['APPROVED', 'SUCCESS'].includes(d.status))
     .reduce((sum, d) => sum + d.amountUSD, 0);
 
-  const totalDepositsINR = deposits
+  const totalDepositsINR = dateFilteredDeposits
     .filter(d => ['APPROVED', 'SUCCESS'].includes(d.status))
     .reduce((sum, d) => sum + (d.equivalentINR || 0), 0);
 
-  const totalWithdrawalsUSD = withdrawals
+  const totalWithdrawalsUSD = dateFilteredWithdrawals
     .filter(w => ['APPROVED', 'PAID'].includes(w.status))
     .reduce((sum, w) => sum + w.amountUSD, 0);
 
-  const totalWithdrawalsINR = withdrawals
+  const totalWithdrawalsINR = dateFilteredWithdrawals
     .filter(w => ['APPROVED', 'PAID'].includes(w.status))
     .reduce((sum, w) => sum + w.amountINR, 0);
 
-  // Quick filter for search
-  const filteredTransactions = transactions.filter(t => 
+  // Quick filter for search using the date-filtered arrays!
+  const filteredTransactions = dateFilteredTransactions.filter(t => 
     t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (t.reference && t.reference.toLowerCase().includes(searchQuery.toLowerCase())) ||
     t.transactionType.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredDeposits = deposits.filter(d => 
+  const filteredDeposits = dateFilteredDeposits.filter(d => 
     d.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (d.txHash && d.txHash.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (d.walletAddress && d.walletAddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
     d.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredWithdrawals = withdrawals.filter(w => 
+  const filteredWithdrawals = dateFilteredWithdrawals.filter(w => 
     w.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     w.method.toLowerCase().includes(searchQuery.toLowerCase()) ||
     w.accountHolder.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -288,7 +315,7 @@ export default function UserTransactionHistoryModal({
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Ledger entries ({transactions.length})
+                    Ledger entries ({dateFilteredTransactions.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('deposits')}
@@ -298,7 +325,7 @@ export default function UserTransactionHistoryModal({
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Deposits ({deposits.length})
+                    Deposits ({dateFilteredDeposits.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('withdrawals')}
@@ -308,7 +335,7 @@ export default function UserTransactionHistoryModal({
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Withdrawals ({withdrawals.length})
+                    Withdrawals ({dateFilteredWithdrawals.length})
                   </button>
                 </div>
 
@@ -320,7 +347,7 @@ export default function UserTransactionHistoryModal({
                     placeholder="Filter records..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-9 pr-4 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-sans"
+                    className="w-full bg-gray-955 border border-gray-800 rounded-xl pl-9 pr-4 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-sans"
                   />
                   {searchQuery && (
                     <button
@@ -331,6 +358,40 @@ export default function UserTransactionHistoryModal({
                     </button>
                   )}
                 </div>
+              </div>
+
+              {/* Date Filter */}
+              <div className="flex flex-wrap items-center gap-3 bg-gray-900/60 border border-gray-800 p-3.5 rounded-2xl shadow-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Date Range:</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+                  />
+                  <span className="text-gray-655 text-xs">—</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    className="bg-gray-950 border border-gray-855 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+                  />
+                </div>
+
+                {(startDate || endDate) && (
+                  <button
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                    }}
+                    className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer sm:ml-auto"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
 
               {/* Tab Content Display */}
