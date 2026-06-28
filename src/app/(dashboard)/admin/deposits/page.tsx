@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
-import { ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ShieldAlert, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, ShieldCheck, ShieldAlert, AlertTriangle, RefreshCw, Search } from 'lucide-react';
 
 interface Deposit {
   id: string;
@@ -267,6 +267,7 @@ export default function AdminDepositsPage() {
   const [processedPage, setProcessedPage] = useState(1);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const processedLimit = 10;
   const dispatch = useDispatch();
 
@@ -319,25 +320,32 @@ export default function AdminDepositsPage() {
 
   if (loading) return <div className="text-gray-400 p-8 font-sans">Loading deposits...</div>;
 
-  const filterByDate = <T extends { createdAt: string }>(items: T[]) => {
+  const filterDeposits = (items: Deposit[]) => {
     return items.filter(item => {
-      if (!item.createdAt) return true;
-      const dateVal = new Date(item.createdAt).getTime();
-      if (startDate) {
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        if (dateVal < start.getTime()) return false;
+      if (item.createdAt) {
+        const dateVal = new Date(item.createdAt).getTime();
+        if (startDate) {
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          if (dateVal < start.getTime()) return false;
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          if (dateVal > end.getTime()) return false;
+        }
       }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        if (dateVal > end.getTime()) return false;
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase().trim();
+        const userEmail = item.user?.email?.toLowerCase() || '';
+        const userId = item.user?.userId?.toLowerCase() || '';
+        if (!userEmail.includes(query) && !userId.includes(query)) return false;
       }
       return true;
     });
   };
 
-  const filteredDeposits = filterByDate(deposits);
+  const filteredDeposits = filterDeposits(deposits);
   const pendingDeposits = filteredDeposits.filter(d => d.status === 'PENDING');
   const processedDeposits = filteredDeposits.filter(d => d.status !== 'PENDING');
   const processedTotalPages = Math.ceil(processedDeposits.length / processedLimit);
@@ -348,8 +356,8 @@ export default function AdminDepositsPage() {
 
   return (
     <div className="space-y-8 font-sans">
-      {/* Header with Date Filter */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-lg">
+      {/* Header with Date & Search Filter */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-lg">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <ArrowDownToLine className="w-6 h-6 text-indigo-400" />
@@ -358,10 +366,26 @@ export default function AdminDepositsPage() {
           <p className="text-gray-400 text-xs mt-0.5">Review and approve user crypto deposit submissions</p>
         </div>
 
-        {/* Date Filter */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Date Range:</span>
-          <div className="flex items-center gap-1.5">
+        {/* Date & User Search Filters */}
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          {/* User Search Input */}
+          <div className="relative w-full sm:w-56">
+            <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search User ID/Email..."
+              value={searchQuery}
+              onChange={e => {
+                setSearchQuery(e.target.value);
+                setProcessedPage(1);
+              }}
+              className="w-full bg-gray-950 border border-gray-850 rounded-xl pl-9 pr-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 cursor-text"
+            />
+          </div>
+
+          {/* Date inputs */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hidden sm:inline">Date:</span>
             <input
               type="date"
               value={startDate}
@@ -369,7 +393,7 @@ export default function AdminDepositsPage() {
                 setStartDate(e.target.value);
                 setProcessedPage(1);
               }}
-              className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+              className="bg-gray-950 border border-gray-850 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark] flex-1 sm:flex-none"
             />
             <span className="text-gray-650 text-xs">—</span>
             <input
@@ -379,17 +403,18 @@ export default function AdminDepositsPage() {
                 setEndDate(e.target.value);
                 setProcessedPage(1);
               }}
-              className="bg-gray-950 border border-gray-855 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark]"
+              className="bg-gray-955 border border-gray-855 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer [color-scheme:dark] flex-1 sm:flex-none"
             />
           </div>
-          {(startDate || endDate) && (
+          {(startDate || endDate || searchQuery) && (
             <button
               onClick={() => {
                 setStartDate('');
                 setEndDate('');
+                setSearchQuery('');
                 setProcessedPage(1);
               }}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all cursor-pointer w-full sm:w-auto"
             >
               Reset
             </button>

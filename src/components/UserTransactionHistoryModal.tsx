@@ -309,33 +309,39 @@ export default function UserTransactionHistoryModal({
                 <div className="flex bg-gray-950 p-1 rounded-xl border border-gray-800/80 w-full sm:w-auto">
                   <button
                     onClick={() => setActiveTab('ledger')}
-                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       activeTab === 'ledger'
                         ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/15'
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Ledger entries ({dateFilteredTransactions.length})
+                    <span className="hidden sm:inline">Ledger entries</span>
+                    <span className="sm:hidden">Ledger</span>
+                    <span className="ml-1 opacity-70 font-mono">({dateFilteredTransactions.length})</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('deposits')}
-                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       activeTab === 'deposits'
                         ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/15'
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Deposits ({dateFilteredDeposits.length})
+                    <span className="hidden sm:inline">Deposits</span>
+                    <span className="sm:hidden">Dep</span>
+                    <span className="ml-1 opacity-70 font-mono">({dateFilteredDeposits.length})</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('withdrawals')}
-                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                    className={`flex-1 sm:flex-none px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer text-center ${
                       activeTab === 'withdrawals'
                         ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/15'
                         : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                     }`}
                   >
-                    Withdrawals ({dateFilteredWithdrawals.length})
+                    <span className="hidden sm:inline">Withdrawals</span>
+                    <span className="sm:hidden">Wd</span>
+                    <span className="ml-1 opacity-70 font-mono">({dateFilteredWithdrawals.length})</span>
                   </button>
                 </div>
 

@@ -165,10 +165,10 @@ export default function HistoryPage() {
   const totalPagesDeposits = Math.ceil(filteredDeposits.length / itemsPerPage);
   const totalPagesWithdrawals = Math.ceil(filteredWithdrawals.length / itemsPerPage);
 
-   const tabs: { key: TabType; label: string; count: number }[] = [
-    { key: 'all', label: 'All Transactions', count: combinedTransactions.length },
-    { key: 'deposits', label: 'Deposits', count: filteredDeposits.length },
-    { key: 'withdrawals', label: 'Withdrawals', count: filteredWithdrawals.length },
+   const tabs: { key: TabType; label: string; shortLabel: string; count: number }[] = [
+    { key: 'all', label: 'All Transactions', shortLabel: 'All', count: combinedTransactions.length },
+    { key: 'deposits', label: 'Deposits', shortLabel: 'Dep', count: filteredDeposits.length },
+    { key: 'withdrawals', label: 'Withdrawals', shortLabel: 'Wd', count: filteredWithdrawals.length },
   ];
 
   return (
@@ -181,17 +181,19 @@ export default function HistoryPage() {
       {/* Action Bar: Tabs & Date Filter */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-lg">
         {/* Tab Selector */}
-        <div className="flex gap-1 bg-gray-950 border border-gray-850 rounded-xl p-1 w-full lg:w-auto overflow-x-auto">
+        <div className="flex gap-1 bg-gray-950 border border-gray-850 rounded-xl p-1 w-full lg:w-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${activeTab === tab.key
+              className={`flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer whitespace-nowrap text-center ${activeTab === tab.key
                 ? 'bg-indigo-600 text-white shadow-lg'
                 : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
                 }`}
             >
-              {tab.label} <span className="ml-1 text-xs opacity-70 font-mono">({tab.count})</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
+              <span className="ml-1 text-xs opacity-70 font-mono">({tab.count})</span>
             </button>
           ))}
         </div>
