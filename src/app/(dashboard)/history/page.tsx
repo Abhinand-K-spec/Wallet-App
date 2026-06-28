@@ -213,7 +213,7 @@ export default function HistoryPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 font-medium text-white">
-                          {tx.method === 'BANK' ? '—' : `$${tx.amountUSD.toFixed(4)}`}
+                          {tx.method === 'BANK' ? '' : `$${tx.amountUSD.toFixed(4)}`}
                         </td>
                         <td className="px-6 py-4 text-gray-300">{tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4">
@@ -290,18 +290,29 @@ export default function HistoryPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
-                      <div>
-                        <p className="text-[10px] text-gray-500">USDT Amount</p>
-                        <p className="font-bold text-white font-mono">
-                          {tx.method === 'BANK' ? '—' : `$${tx.amountUSD.toFixed(4)}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] text-gray-500">INR Value</p>
-                        <p className="font-bold text-gray-300 font-mono">
-                          {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}
-                        </p>
-                      </div>
+                      {tx.method === 'BANK' ? (
+                        <div>
+                          <p className="text-[10px] text-gray-500">INR Value</p>
+                          <p className="font-bold text-emerald-400 font-mono">
+                            {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <p className="text-[10px] text-gray-500">USDT Amount</p>
+                            <p className="font-bold text-white font-mono">
+                              ${tx.amountUSD.toFixed(4)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] text-gray-500">INR Value</p>
+                            <p className="font-bold text-gray-300 font-mono">
+                              {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                     {tx.utr && (
                       <div className="text-[10px] bg-gray-950 p-2 rounded border border-gray-855 font-mono text-indigo-400 break-all select-all">
