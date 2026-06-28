@@ -28,6 +28,7 @@ function mapWithdrawal(w: any) {
     ifsc: w.ifsc,
     walletAddress: w.wallet_address,
     status: w.status,
+    utr: w.utr,
     createdAt: w.created_at,
     updatedAt: w.updated_at
   };

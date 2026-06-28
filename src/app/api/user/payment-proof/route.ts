@@ -25,6 +25,49 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (fetchErr || !proof) {
+      // Try to fetch withdrawal details
+      const { data: withdrawal } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .eq('id', paymentRequestId)
+        .maybeSingle();
+
+      if (withdrawal) {
+        return NextResponse.json({
+          hasProof: false,
+          withdrawal: {
+            id: withdrawal.id,
+            utr: withdrawal.utr,
+            amountUSD: withdrawal.amount_usd,
+            amountINR: withdrawal.amount_inr,
+            method: withdrawal.method,
+            status: withdrawal.status,
+            updatedAt: withdrawal.updated_at
+          }
+        });
+      }
+
+      // Try to fetch deposit details
+      const { data: deposit } = await supabase
+        .from('wallet_deposits')
+        .select('*')
+        .eq('id', paymentRequestId)
+        .maybeSingle();
+
+      if (deposit) {
+        return NextResponse.json({
+          hasProof: false,
+          deposit: {
+            id: deposit.id,
+            utr: deposit.tx_hash,
+            amountUSD: deposit.amount_usd,
+            amountINR: deposit.equivalent_inr,
+            status: deposit.status,
+            updatedAt: deposit.updated_at
+          }
+        });
+      }
+
       return NextResponse.json({ hasProof: false });
     }
 

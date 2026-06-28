@@ -203,7 +203,9 @@ export default function HistoryPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-medium text-white">${tx.amountUSD.toFixed(4)}</td>
+                        <td className="px-6 py-4 font-medium text-white">
+                          {tx.method === 'BANK' ? '—' : `$${tx.amountUSD.toFixed(4)}`}
+                        </td>
                         <td className="px-6 py-4 text-gray-300">{tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN')}` : '—'}</td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
@@ -281,7 +283,9 @@ export default function HistoryPage() {
                     <div className="flex items-center justify-between text-xs">
                       <div>
                         <p className="text-[10px] text-gray-500">USDT Amount</p>
-                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(4)}</p>
+                        <p className="font-bold text-white font-mono">
+                          {tx.method === 'BANK' ? '—' : `$${tx.amountUSD.toFixed(4)}`}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Value</p>
@@ -507,7 +511,9 @@ export default function HistoryPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-300">{w.accountHolder}</td>
-                        <td className="px-6 py-4 font-medium text-white">${w.amountUSD.toFixed(4)}</td>
+                        <td className="px-6 py-4 font-medium text-white">
+                           {w.method === 'BANK' ? '—' : `$${w.amountUSD.toFixed(4)}`}
+                         </td>
                         <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
                         <td className="px-6 py-4 font-mono text-indigo-400 text-xs break-all select-all">{w.utr || '—'}</td>
                         <td className="px-6 py-4">
@@ -556,7 +562,9 @@ export default function HistoryPage() {
                     <div className="flex items-center justify-between text-xs">
                       <div>
                         <p className="text-[10px] text-gray-500">USDT Amount</p>
-                        <p className="font-bold text-white font-mono">${w.amountUSD.toFixed(4)}</p>
+                        <p className="font-bold text-white font-mono">
+                           {w.method === 'BANK' ? '—' : `$${w.amountUSD.toFixed(4)}`}
+                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Amount</p>

@@ -35,7 +35,7 @@ export default function UserPaymentProofModal({
       const fetchProof = async () => {
         try {
           const res = await api.get(`/user/payment-proof?paymentRequestId=${paymentRequestId}`);
-          if (res.data.hasProof === false) {
+          if (res.data.hasProof === false && !res.data.withdrawal?.utr && !res.data.deposit?.utr) {
             setError('No payment proof uploaded for this transaction.');
           } else {
             setProof(res.data);
@@ -102,12 +102,71 @@ export default function UserPaymentProofModal({
                 Close Window
               </button>
             </div>
+          ) : proof.hasProof === false ? (
+            (() => {
+              const details = proof.withdrawal || proof.deposit;
+              const isWithdrawal = !!proof.withdrawal;
+              const isBankTransfer = isWithdrawal ? (details?.method === 'BANK') : false;
+              
+              return (
+                <div className="w-full flex flex-col gap-6">
+                  <div className="bg-gray-950 border border-gray-850 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                        Payment Reference Details
+                      </span>
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-lg font-bold text-xs flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {details?.status || 'PAID'}
+                      </span>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm border-collapse">
+                        <thead>
+                          <tr className="border-b border-gray-800 text-gray-400">
+                            <th className="py-2.5 px-4 font-medium font-sans">TxID / UTR (Hash)</th>
+                            {!isBankTransfer && (
+                              <th className="py-2.5 px-4 font-medium font-sans">Amount (USDT)</th>
+                            )}
+                            {(isBankTransfer || details?.amountINR) && (
+                              <th className="py-2.5 px-4 font-medium font-sans">Amount (INR)</th>
+                            )}
+                            <th className="py-2.5 px-4 font-medium font-sans text-right">Processed Time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="text-white hover:bg-gray-800/10 transition-colors">
+                            <td className="py-4 px-4 font-mono text-indigo-400 text-xs break-all select-all">
+                              {details?.utr || '—'}
+                            </td>
+                            {!isBankTransfer && (
+                              <td className="py-4 px-4 font-mono text-gray-200">
+                                ${details?.amountUSD?.toFixed(4) || '—'}
+                              </td>
+                            )}
+                            {(isBankTransfer || details?.amountINR) && (
+                              <td className="py-4 px-4 font-mono text-gray-200">
+                                ₹{details?.amountINR?.toLocaleString('en-IN') || '—'}
+                              </td>
+                            )}
+                            <td className="py-4 px-4 text-right text-gray-500 text-xs font-sans">
+                              {details?.updatedAt ? new Date(details.updatedAt).toLocaleString() : '—'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
               
               {/* Left Column: Image slip preview */}
               <div className="bg-gray-950 border border-gray-850 rounded-2xl flex flex-col overflow-hidden min-h-[300px]">
-                <div className="flex items-center justify-between p-3 border-b border-gray-850 bg-gray-900/60 shrink-0">
+                <div className="flex items-center justify-between p-3 border-b border-gray-855 bg-gray-900/60 shrink-0">
                   <span className="text-xs font-semibold text-gray-400">Official Payment Slip</span>
                   <a
                     href={`/api/admin/payment-proof/${proof.id}/download`}
@@ -123,20 +182,20 @@ export default function UserPaymentProofModal({
                     <img
                       src={proof.originalFileUrl}
                       alt="Verified Payment Proof Receipt"
-                      className="max-h-[45vh] max-w-full object-contain rounded-lg border border-gray-850 shadow-md transition-all hover:scale-[1.01]"
+                      className="max-h-[45vh] max-w-full object-contain rounded-lg border border-gray-855 shadow-md transition-all hover:scale-[1.01]"
                     />
                   </a>
                 </div>
               </div>
 
               {/* Right Column: Transaction Details List */}
-              <div className="flex flex-col border border-gray-850 bg-gray-950/20 rounded-2xl p-5 space-y-4">
-                <div className="border-b border-gray-850 pb-2">
+              <div className="flex flex-col border border-gray-855 bg-gray-950/20 rounded-2xl p-5 space-y-4">
+                <div className="border-b border-gray-855 pb-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Receipt Details</span>
                 </div>
 
                 <div className="space-y-3.5 text-left text-xs font-sans">
-                  <div className="bg-gray-950 p-3 rounded-xl border border-gray-850 flex items-center justify-between">
+                  <div className="bg-gray-950 p-3 rounded-xl border border-gray-855 flex items-center justify-between">
                     <span className="text-gray-500 font-medium">Verified Status</span>
                     <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 rounded-lg font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -145,10 +204,18 @@ export default function UserPaymentProofModal({
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60">
-                      <span className="text-gray-500 block mb-0.5">Amount</span>
-                      <span className="text-sm font-bold text-white font-mono">${proof.amount?.toFixed(2) || '—'}</span>
-                    </div>
+                    {proof.currency !== 'INR' && (
+                      <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60">
+                        <span className="text-gray-500 block mb-0.5">Amount (USDT)</span>
+                        <span className="text-sm font-bold text-white font-mono">${proof.amount?.toFixed(2) || '—'}</span>
+                      </div>
+                    )}
+                    {proof.currency === 'INR' && (
+                      <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60">
+                        <span className="text-gray-500 block mb-0.5">Amount (INR)</span>
+                        <span className="text-sm font-bold text-white font-mono">₹{proof.amount?.toLocaleString('en-IN') || '—'}</span>
+                      </div>
+                    )}
                     <div className="bg-gray-950/40 p-3 rounded-xl border border-gray-850/60">
                       <span className="text-gray-500 block mb-0.5">Currency</span>
                       <span className="text-sm font-bold text-white font-mono">{proof.currency || '—'}</span>

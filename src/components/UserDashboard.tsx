@@ -29,6 +29,7 @@ interface Transaction {
   transactionType: string;
   amountUSD: number;
   amountINR: number | null;
+  reference?: string | null;
   status: string;
   createdAt: string;
 }
@@ -242,19 +243,25 @@ const UserDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800/50">
-                    {profile.transactions.slice(0, 5).map((tx: Transaction) => (
-                      <tr key={tx.id} className="hover:bg-gray-800/10 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border ${
-                            tx.transactionType === 'DEPOSIT' 
-                              ? 'bg-red-500/10 text-red-400 border-red-500/10' 
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
-                          }`}>
-                            {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
-                            {tx.transactionType}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-bold text-gray-200 font-mono">${tx.amountUSD.toFixed(4)}</td>
+                    {profile.transactions.slice(0, 5).map((tx: Transaction) => {
+                      const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' &&
+                        profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK';
+                      
+                      return (
+                        <tr key={tx.id} className="hover:bg-gray-800/10 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border ${
+                              tx.transactionType === 'DEPOSIT' 
+                                ? 'bg-red-500/10 text-red-400 border-red-500/10' 
+                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
+                            }`}>
+                              {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
+                              {tx.transactionType}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 font-bold text-gray-200 font-mono">
+                            {isBankWithdrawal ? '—' : `$${tx.amountUSD.toFixed(4)}`}
+                          </td>
                         <td className="px-6 py-4 text-gray-300 font-bold font-mono">
                           {tx.amountINR ? `₹${tx.amountINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
                         </td>
@@ -267,33 +274,40 @@ const UserDashboard = () => {
                           {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-850">
-                {profile.transactions.slice(0, 5).map((tx: Transaction) => (
-                  <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-xl text-[10px] font-semibold border ${
-                        tx.transactionType === 'DEPOSIT' 
-                          ? 'bg-red-500/10 text-red-400 border-red-500/10' 
-                          : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
-                      }`}>
-                        {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3 h-3" /> : <ArrowUpFromLine className="w-3 h-3" />}
-                        {tx.transactionType}
-                      </span>
-                      <span className={statusBadge(tx.status)}>
-                        {tx.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <div>
-                        <p className="text-[10px] text-gray-500">USDT Amount</p>
-                        <p className="font-bold text-white font-mono">${tx.amountUSD.toFixed(4)}</p>
+                {profile.transactions.slice(0, 5).map((tx: Transaction) => {
+                  const isBankWithdrawal = tx.transactionType === 'WITHDRAWAL' &&
+                    profile.withdrawals?.find(w => w.id === tx.reference)?.method === 'BANK';
+                  
+                  return (
+                    <div key={tx.id} className="p-4 space-y-3 hover:bg-gray-800/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-xl text-[10px] font-semibold border ${
+                          tx.transactionType === 'DEPOSIT' 
+                            ? 'bg-red-500/10 text-red-400 border-red-500/10' 
+                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
+                        }`}>
+                          {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
+                          {tx.transactionType}
+                        </span>
+                        <span className={statusBadge(tx.status)}>
+                          {tx.status}
+                        </span>
                       </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div>
+                          <p className="text-[10px] text-gray-500">USDT Amount</p>
+                          <p className="font-bold text-white font-mono">
+                            {isBankWithdrawal ? '—' : `$${tx.amountUSD.toFixed(4)}`}
+                          </p>
+                        </div>
                       <div className="text-right">
                         <p className="text-[10px] text-gray-500">INR Value</p>
                         <p className="font-bold text-gray-300 font-mono">
@@ -308,7 +322,8 @@ const UserDashboard = () => {
                       </span>
                     </div>
                   </div>
-                ))}
+                );
+                })}
               </div>
             </div>
           ) : (
