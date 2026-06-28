@@ -108,60 +108,68 @@ const AdminDashboard = () => {
     <div className="space-y-6 font-sans">
       <h1 className="text-2xl font-bold text-white tracking-tight">Admin Overview</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {/* Total Users */}
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg">
+          <div className="flex items-center gap-3.5">
             <div className="p-3 bg-blue-500/10 rounded-xl">
-              <Users className="w-6 h-6 text-blue-400" />
+              <Users className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-400">Total Users</p>
-              <h3 className="text-2xl font-bold text-white">{stats?.totalUsers || 0}</h3>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Users</p>
+              <h3 className="text-xl font-bold text-white mt-0.5">{stats?.totalUsers || 0}</h3>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center gap-4 mb-4">
+        {/* Total Deposits */}
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg">
+          <div className="flex items-center gap-3.5">
             <div className="p-3 bg-green-500/10 rounded-xl">
-              <ArrowDownToLine className="w-6 h-6 text-green-400" />
+              <ArrowDownToLine className="w-5 h-5 text-green-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-400">Total Deposits (USDT)</p>
-              <h3 className="text-2xl font-bold text-white">${stats?.totalDepositsUSD?.toFixed(4) || '0.0000'}</h3>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Deposits</p>
+              <h3 className="text-xl font-bold text-white mt-0.5 font-mono">${stats?.totalDepositsUSD?.toFixed(4) || '0.0000'}</h3>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-center gap-4 mb-4">
+        {/* Total Withdrawn */}
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg">
+          <div className="flex items-center gap-3.5">
             <div className="p-3 bg-orange-500/10 rounded-xl">
-              <ArrowUpFromLine className="w-6 h-6 text-orange-400" />
+              <ArrowUpFromLine className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-400">Total Withdrawn (INR)</p>
-              <h3 className="text-2xl font-bold text-white">₹{stats?.totalWithdrawalsINR?.toLocaleString('en-IN') || '0'}</h3>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Withdrawn</p>
+              <h3 className="text-xl font-bold text-white mt-0.5 font-mono">₹{stats?.totalWithdrawalsINR?.toLocaleString('en-IN') || '0'}</h3>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-900/40 to-gray-900 border border-indigo-500/20 rounded-2xl p-6 shadow-lg">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-indigo-500/20 rounded-xl mt-1">
-              <Clock className="w-6 h-6 text-indigo-400" />
+        {/* Pending Action Bar spanning all columns */}
+        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-indigo-900/30 via-indigo-900/10 to-gray-900 border border-indigo-500/15 rounded-2xl p-4.5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-indigo-500/20 rounded-xl shrink-0">
+              <Clock className="w-5 h-5 text-indigo-400 animate-pulse" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-400 mb-2">Pending Requests</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Deposits</span>
-                  <span className="text-xl font-bold text-emerald-400">{stats?.pendingDeposits || 0}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">Withdrawals</span>
-                  <span className="text-xl font-bold text-orange-400">{stats?.pendingWithdrawals || 0}</span>
-                </div>
-              </div>
+            <div>
+              <p className="text-sm font-bold text-indigo-300">Pending Actions Required</p>
+              <p className="text-xs text-gray-500 mt-0.5">Approve or verify these queued transactions</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 sm:mr-4">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span className="text-xs font-semibold text-gray-400">Deposits:</span>
+              <span className="text-lg font-bold text-emerald-400 font-mono">{stats?.pendingDeposits || 0}</span>
+            </div>
+            <div className="h-6 w-[1px] bg-gray-800 hidden sm:block"></div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+              <span className="text-xs font-semibold text-gray-400">Withdrawals:</span>
+              <span className="text-lg font-bold text-orange-400 font-mono">{stats?.pendingWithdrawals || 0}</span>
             </div>
           </div>
         </div>
