@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { addToast } from '@/store/toastSlice';
 import api from '@/api/axios';
 import { useExchangeRate } from '@/context/ExchangeRateContext';
-import { Building2, Landmark, CheckCircle2, Loader2, AlertCircle, RefreshCw, DollarSign, Wallet } from 'lucide-react';
+import { Building2, Landmark, CheckCircle2, Loader2, AlertCircle, RefreshCw, DollarSign, Wallet, Coins } from 'lucide-react';
 
 type MethodType = 'BANK' | 'USDT';
 
@@ -222,9 +222,11 @@ export default function WithdrawPage() {
         <p className="text-red-400 mt-2 text-sm">The amount will be deducted from your total deposits</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 bg-gray-950/80 border border-gray-855 rounded-2xl p-1.5 w-full">
+      {/* Method Selection Visual Cards */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Bank Transfer Card */}
         <button
+          type="button"
           onClick={() => {
             setMethod('BANK');
             setError('');
@@ -236,15 +238,24 @@ export default function WithdrawPage() {
             setIfsc('');
             setWalletAddress('');
           }}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${method === 'BANK'
-            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10'
-            : 'text-gray-400 hover:text-white hover:bg-gray-900/40'
-            }`}
+          className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all duration-300 cursor-pointer text-center group ${
+            method === 'BANK'
+              ? 'bg-indigo-600/10 border-indigo-500 shadow-xl shadow-indigo-600/5 text-white'
+              : 'bg-gray-900/60 border-gray-800 text-gray-400 hover:text-gray-200 hover:border-gray-700'
+          }`}
         >
-          <Building2 className="w-4 h-4" />
-          Bank Transfer (INR)
+          <div className={`p-3 rounded-2xl mb-3 transition-colors ${
+            method === 'BANK' ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/10' : 'bg-gray-950 text-gray-500 group-hover:bg-gray-850 group-hover:text-gray-300'
+          }`}>
+            <Building2 className="w-6 h-6" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-wider block">Bank Payout</span>
+          <span className="text-[9px] text-gray-500 mt-1 block max-w-[150px] leading-tight">Withdraw INR directly to your bank account</span>
         </button>
+
+        {/* USDT Crypto Card */}
         <button
+          type="button"
           onClick={() => {
             setMethod('USDT');
             setError('');
@@ -256,13 +267,19 @@ export default function WithdrawPage() {
             setIfsc('');
             setWalletAddress('');
           }}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${method === 'USDT'
-            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10'
-            : 'text-gray-400 hover:text-white hover:bg-gray-900/40'
-            }`}
+          className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all duration-300 cursor-pointer text-center group ${
+            method === 'USDT'
+              ? 'bg-indigo-600/10 border-indigo-500 shadow-xl shadow-indigo-600/5 text-white'
+              : 'bg-gray-900/60 border-gray-800 text-gray-400 hover:text-gray-200 hover:border-gray-700'
+          }`}
         >
-          <Wallet className="w-4 h-4" />
-          Crypto Withdrawal (USDT)
+          <div className={`p-3 rounded-2xl mb-3 transition-colors ${
+            method === 'USDT' ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/10' : 'bg-gray-950 text-gray-500 group-hover:bg-gray-850 group-hover:text-gray-300'
+          }`}>
+            <Wallet className="w-6 h-6" />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-wider block">USDT Payout</span>
+          <span className="text-[9px] text-gray-500 mt-1 block max-w-[150px] leading-tight">Withdraw USDT to your crypto wallet address</span>
         </button>
       </div>
 
@@ -284,40 +301,53 @@ export default function WithdrawPage() {
           </div>
         )}
 
-        <div className={`grid grid-cols-1 ${method === 'USDT' ? 'sm:grid-cols-2' : ''} gap-4 mb-6`}>
-          {/* Balance Card */}
-          <div className="bg-gray-950/80 border border-gray-855 rounded-2xl p-4 flex items-center gap-3">
-            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-              <DollarSign className="w-4 h-4 text-emerald-400" />
+        {/* Dynamic Balance Card */}
+        <div className="bg-gray-955/80 border border-gray-855 rounded-2xl p-4.5 flex items-center justify-between shadow-sm mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
+              {method === 'BANK' ? <Landmark className="w-5 h-5" /> : <Coins className="w-5 h-5" />}
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Available Balance</p>
-              <p className="text-sm font-bold text-white mt-0.5 font-mono">
-                {balanceLoading ? 'Loading...' : `₹${balanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })} INR`}
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                Available Balance ({method === 'BANK' ? 'INR' : 'USDT'})
+              </p>
+              <h3 className="text-xl font-bold text-white mt-0.5 font-mono">
+                {balanceLoading ? (
+                  'Loading...'
+                ) : method === 'BANK' ? (
+                  `₹${balanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                ) : (
+                  `$${balanceUSD.toFixed(4)} USDT`
+                )}
+              </h3>
+              <p className="text-[10px] text-gray-500 mt-0.5 font-mono">
+                Equivalent: {method === 'BANK' ? `$${balanceUSD.toFixed(4)} USDT` : `₹${balanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
               </p>
             </div>
           </div>
-
-          {/* Live Exchange Rate Card */}
           {method === 'USDT' && (
-            <div className="bg-gray-950/80 border border-gray-855 rounded-2xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-indigo-500/10 rounded-xl">
-                  <RefreshCw className={`w-4 h-4 text-indigo-400 ${rateLoading ? 'animate-spin' : ''}`} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Exchange Rate (Live)</p>
-                  <p className="text-sm font-bold text-white mt-0.5 font-mono">
-                    {rateLoading ? 'Fetching...' : `1 USDT = ₹${inrRate.toFixed(2)} INR`}
-                  </p>
-                </div>
-              </div>
-              <div className="text-[9px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded font-black border border-indigo-500/20 font-sans shrink-0 self-start">
-                USDT / INR
-              </div>
+            <div className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1.5 rounded-xl font-black border border-indigo-500/15 flex flex-col items-center">
+              <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider leading-none">Rate</span>
+              <span className="font-mono mt-1 select-none">₹{inrRate.toFixed(2)}</span>
             </div>
           )}
         </div>
+
+        {/* Live validation warning */}
+        {isExceeded && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-start gap-3 animate-pulse">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <p className="text-red-400 text-xs font-semibold leading-relaxed">
+              Insufficient balance! Maximum withdrawal amount is{' '}
+              <span className="font-bold font-mono">
+                {method === 'BANK'
+                  ? `₹${balanceINR.toLocaleString('en-IN')}`
+                  : `$${(balanceUSD > 0.5 ? balanceUSD - 0.5 : 0).toFixed(4)} USDT`}
+              </span>{' '}
+              {method === 'USDT' && '(including 0.50 USDT fee)'}.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* BANK Transfer Section */}

@@ -134,24 +134,24 @@ const UserDashboard = () => {
         <p className="text-gray-400 text-sm mt-1">Real-time status of your assets and deposits</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Area: Virtual Card & Actions Grid (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-7 space-y-5">
           
           {/* Virtual Credit Card Widget */}
-          <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 rounded-3xl p-6 relative overflow-hidden shadow-2xl min-h-[220px] flex flex-col justify-between hover:scale-[1.01] transition-transform duration-300 group border border-indigo-400/20">
+          <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-850 rounded-3xl p-6 relative overflow-hidden shadow-2xl min-h-[200px] flex flex-col justify-between hover:scale-[1.01] transition-transform duration-350 group border border-indigo-400/10">
             {/* Gloss reflection overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 opacity-50 pointer-events-none" />
             
             {/* Tech glowing design circles */}
-            <div className="absolute -right-10 -bottom-10 w-44 h-44 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -left-10 -top-10 w-44 h-44 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
-
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -left-10 -top-10 w-40 h-40 bg-purple-400/20 rounded-full blur-3xl pointer-events-none" />
+ 
             <div className="flex items-center justify-between relative z-10">
-              <div className="w-11 h-8 bg-amber-400/30 border border-amber-400/40 rounded-md relative overflow-hidden flex flex-wrap gap-0.5 p-1 shrink-0">
+              <div className="w-11 h-8 bg-amber-400/20 border border-amber-400/30 rounded-md relative overflow-hidden flex flex-wrap gap-0.5 p-1 shrink-0">
                 <div className="w-full h-[1px] bg-amber-400/30"></div>
-                <div className="w-1/2 h-full bg-amber-400/20"></div>
+                <div className="w-1/2 h-full bg-amber-400/15"></div>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="bg-white/10 w-6 h-6 rounded-md flex items-center justify-center backdrop-blur-md">
@@ -160,14 +160,14 @@ const UserDashboard = () => {
                 <span className="text-[10px] font-black uppercase tracking-wider text-white">GetPay Wallet Card</span>
               </div>
             </div>
-
+ 
             <div className="relative z-10 my-4">
-              <p className="text-[10px] text-indigo-200 uppercase font-bold tracking-widest pl-0.5">Available Balance</p>
+              <p className="text-[10px] text-indigo-200/90 uppercase font-bold tracking-widest pl-0.5">Available Balance</p>
               <h3 className="text-3xl font-black text-white mt-1">₹{availableBalanceINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
               <p className="text-xs text-indigo-200/80 font-mono mt-0.5 pl-0.5">${availableBalanceUSD.toFixed(4)} USDT</p>
             </div>
-
-            <div className="flex items-center justify-between relative z-10 pt-3 border-t border-indigo-400/20 text-xs">
+ 
+            <div className="flex items-center justify-between relative z-10 pt-3 border-t border-indigo-400/15 text-xs">
               <div>
                 <p className="text-[9px] text-indigo-300 uppercase tracking-wider">Account ID</p>
                 <p className="font-semibold text-white truncate max-w-[150px]">{profile?.email}</p>
@@ -178,69 +178,55 @@ const UserDashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Quick Action Grid */}
-          <div className="grid grid-cols-3 gap-4">
+ 
+          {/* Quick Primary Actions */}
+          <div className="flex gap-4">
             <button
               onClick={() => router.push('/deposit')}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl py-3.5 px-4 shadow-lg shadow-indigo-600/15 hover:shadow-indigo-600/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
-                <Plus className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-semibold text-gray-200">Deposit</p>
+              <Plus className="w-4.5 h-4.5" />
+              Deposit
             </button>
-
             <button
               onClick={() => router.push('/withdraw')}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in"
+              className="flex-1 bg-gray-900 border border-gray-800 hover:border-gray-700 text-white font-semibold rounded-2xl py-3.5 px-4 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
-                <ArrowUpRight className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-semibold text-gray-200">Withdraw</p>
-            </button>
-
-            <button
-              onClick={() => router.push('/history')}
-              className="w-full bg-gray-900 border border-gray-800 hover:border-indigo-500/30 rounded-2xl p-4 text-center hover:scale-[1.02] transition-all duration-300 group cursor-pointer animate-fade-in"
-            >
-              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
-                <History className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-semibold text-gray-200">Ledger</p>
+              <ArrowUpRight className="w-4.5 h-4.5 text-indigo-400" />
+              Withdraw
             </button>
           </div>
         </div>
-
-        {/* Right Area: Transaction Ledger & Metrics Summary (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Total Deposits Card */}
-          <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
-            <div className="p-3 bg-red-500/10 rounded-xl text-red-400 shrink-0">
-              <ArrowDownToLine className="w-5 h-5" />
+ 
+        {/* Right Area: Metrics summary grid (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col justify-center">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Total Deposits Card */}
+            <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-4.5 shadow-lg flex items-center gap-3.5 hover:border-gray-750 transition-colors">
+              <div className="p-3 bg-red-500/10 rounded-xl text-red-400 shrink-0">
+                <ArrowDownToLine className="w-4.5 h-4.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Deposited</p>
+                <h3 className="text-base font-bold text-white mt-0.5 truncate">₹{totalDepositsINR.toLocaleString('en-IN')}</h3>
+                <p className="text-[9px] text-gray-500 font-mono mt-0.5">${totalDepositsUSD.toFixed(2)} USDT</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-gray-500 font-semibold uppercase">Total Deposits</p>
-              <h3 className="text-xl font-bold text-white mt-0.5">₹{totalDepositsINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalDepositsUSD.toFixed(4)} USDT</p>
-            </div>
-          </div>
-
-          {/* Total Withdrawals Card */}
-          <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-4 hover:border-gray-700 transition-colors">
-            <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
-              <ArrowUpFromLine className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-semibold uppercase">Total Withdrawals</p>
-              <h3 className="text-xl font-bold text-white mt-0.5">₹{totalWithdrawalsINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-              <p className="text-[10px] text-gray-500 font-mono mt-0.5">${totalWithdrawalsUSD.toFixed(4)} USDT</p>
+ 
+            {/* Total Withdrawals Card */}
+            <div className="bg-gray-900 border border-gray-800/80 rounded-2xl p-4.5 shadow-lg flex items-center gap-3.5 hover:border-gray-750 transition-colors">
+              <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400 shrink-0">
+                <ArrowUpFromLine className="w-4.5 h-4.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Withdrawn</p>
+                <h3 className="text-base font-bold text-white mt-0.5 truncate">₹{totalWithdrawalsINR.toLocaleString('en-IN')}</h3>
+                <p className="text-[9px] text-gray-500 font-mono mt-0.5">${totalWithdrawalsUSD.toFixed(2)} USDT</p>
             </div>
           </div>
         </div>
-
       </div>
+    </div>
 
       {/* Bottom Area: Recent Activity Feed */}
       <div className="space-y-4">

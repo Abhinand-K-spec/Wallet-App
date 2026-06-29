@@ -606,51 +606,51 @@ export default function AdminWithdrawalsPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
-                      <th className="px-6 py-4 font-medium">User</th>
-                      <th className="px-6 py-4 font-medium">USDT</th>
-                      <th className="px-6 py-4 font-medium">INR</th>
-                      <th className="px-6 py-4 font-medium">Payout Info</th>
-                      <th className="px-6 py-4 font-medium">UTR / TxID</th>
-                      <th className="px-6 py-4 font-medium font-sans">Status</th>
-                      <th className="px-6 py-4 font-medium font-sans">Requested</th>
-                      <th className="px-6 py-4 font-medium font-sans">Paid / Processed</th>
-                      <th className="px-6 py-4 font-medium text-right font-sans">Receipt</th>
+                      <th className="px-6 py-4 font-medium max-w-[180px]">User</th>
+                      <th className="px-6 py-4 font-medium whitespace-nowrap">USDT</th>
+                      <th className="px-6 py-4 font-medium whitespace-nowrap">INR</th>
+                      <th className="px-6 py-4 font-medium min-w-[160px]">Payout Info</th>
+                      <th className="px-6 py-4 font-medium min-w-[125px] max-w-[145px]">UTR / TxID</th>
+                      <th className="px-6 py-4 font-medium font-sans whitespace-nowrap">Status</th>
+                      <th className="px-6 py-4 font-medium font-sans whitespace-nowrap">Requested</th>
+                      <th className="px-6 py-4 font-medium font-sans whitespace-nowrap">Paid / Processed</th>
+                      <th className="px-6 py-4 font-medium text-right font-sans whitespace-nowrap">Receipt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {paginatedCompletedWithdrawals.map((w) => (
-                      <tr key={w.id} className="hover:bg-gray-800/20 transition-colors">
-                        <td className="px-6 py-4 text-gray-300">{w.user.email}</td>
-                        <td className="px-6 py-4 font-medium text-white font-mono">
+                      <tr key={w.id} className="hover:bg-gray-800/20 transition-colors border-b border-gray-800">
+                        <td className="px-6 py-4 text-gray-300 max-w-[180px] truncate" title={w.user.email}>{w.user.email}</td>
+                        <td className="px-6 py-4 font-medium text-white font-mono whitespace-nowrap">
                           {w.method === 'USDT' ? `$${w.amountUSD.toFixed(4)}` : '—'}
                         </td>
-                        <td className="px-6 py-4 text-gray-300 font-mono">₹{w.amountINR.toLocaleString('en-IN')}</td>
-                        <td className="px-6 py-4 text-gray-400 text-xs">
+                        <td className="px-6 py-4 text-gray-300 font-mono whitespace-nowrap">₹{w.amountINR.toLocaleString('en-IN')}</td>
+                        <td className="px-6 py-4 text-gray-400 text-xs min-w-[160px]">
                           {w.method === 'USDT' ? (
                             <>
                               <span className="text-indigo-400 font-semibold block text-[10px] mb-0.5">USDT Wallet Transfer</span>
-                              <span className="font-medium text-gray-300">{w.accountHolder}</span>
-                              <div className="flex items-center gap-1 font-mono text-xs break-all select-all">
-                                <span title={w.walletAddress || ''}>{w.walletAddress}</span>
+                              <span className="font-medium text-gray-300 truncate max-w-[140px] block">{w.accountHolder}</span>
+                              <div className="flex items-center gap-1 font-mono text-[11px] break-all select-all">
+                                <span title={w.walletAddress || ''} className="truncate max-w-[110px]">{w.walletAddress}</span>
                                 <CopyButton text={w.walletAddress || ''} />
                               </div>
                             </>
                           ) : (
                             <>
                               <span className="text-emerald-400 font-semibold block text-[10px] mb-0.5">Bank Transfer</span>
-                              <span className="font-medium text-gray-300">{w.accountHolder}</span>
-                              <div className="flex items-center gap-1 text-xs">
-                                <span className="font-mono select-all">{w.accountNumber}</span>
+                              <span className="font-medium text-gray-300 truncate max-w-[140px] block">{w.accountHolder}</span>
+                              <div className="flex items-center gap-1 text-[11px]">
+                                <span className="font-mono select-all truncate max-w-[110px]">{w.accountNumber}</span>
                                 <CopyButton text={w.accountNumber || ''} />
                               </div>
                             </>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-indigo-400 font-mono text-xs break-all select-all">{w.utr || '—'}</td>
-                         <td className="px-6 py-4"><span className={statusBadge(w.status)}>{w.status}</span></td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.createdAt).toLocaleString()}</td>
-                        <td className="px-6 py-4 text-gray-500 text-xs">{new Date(w.updatedAt).toLocaleString()}</td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-indigo-400 font-mono text-xs break-all select-all min-w-[125px] max-w-[145px] leading-relaxed">{w.utr || '—'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap"><span className={statusBadge(w.status)}>{w.status}</span></td>
+                        <td className="px-6 py-4 text-gray-500 text-xs whitespace-nowrap">{new Date(w.createdAt).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-gray-500 text-xs whitespace-nowrap">{new Date(w.updatedAt).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
                           {w.status === 'PAID' && (
                             <button
                               onClick={() => {
