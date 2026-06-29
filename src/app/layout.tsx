@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "GetPay Wallet Dashboard",
   description: "Secure TRC20 Wallet Application Dashboard",
   icons: {
-    icon: "/favicon.png",
+    icon: "/logo-no-bg.png",
   },
 };
 

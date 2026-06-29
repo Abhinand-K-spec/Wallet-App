@@ -58,9 +58,8 @@ export default function ResetPasswordPage() {
 
       <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
         {/* Branding */}
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
-          <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+        <div className="flex justify-center mb-8 h-12 py-1">
+          <img src="/logo-no-bg.png" alt="GetPay Logo" className="h-full w-auto object-contain select-none" />
         </div>
 
         {success ? (

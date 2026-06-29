@@ -46,8 +46,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Sidebar (Desktop) */}
       <aside className="w-64 bg-gray-900/60 backdrop-blur-xl border-r border-gray-800/80 flex flex-col hidden md:flex shrink-0 relative z-10">
-        <div className="h-16 flex items-center justify-center border-b border-gray-800/80">
-          <img src="/favicon.png" alt="GetPay Logo" className="w-14 h-14 object-contain" />
+        <div className="h-16 flex items-center justify-center border-b border-gray-800/80 p-3">
+          <img src="/logo-no-bg.png" alt="GetPay Logo" className="h-full w-auto object-contain select-none" />
         </div>
         
         <div className="flex-1 py-6 px-4 space-y-1">
@@ -111,7 +111,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="relative w-full max-w-[280px] bg-gray-900 border-r border-gray-850 flex flex-col p-6 animate-slide-in">
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
               <div className="flex items-center">
-                <img src="/favicon.png" alt="GetPay Logo" className="w-12 h-12 object-contain" />
+                <img src="/logo-no-bg.png" alt="GetPay Logo" className="h-10 w-auto object-contain select-none" />
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 rounded-lg text-gray-400 hover:text-white bg-gray-800/50 cursor-pointer">
                 <X className="w-5 h-5" />
@@ -180,7 +180,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800/50 mr-1 cursor-pointer">
               <Menu className="w-6 h-6" />
             </button>
-            <img src="/favicon.png" alt="GetPay Logo" className="w-10 h-10 object-contain" />
+            <img src="/logo-no-bg.png" alt="GetPay Logo" className="h-9 w-auto object-contain select-none ml-1" />
           </div>
           <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg cursor-pointer transition-all">
             <LogOut className="w-5 h-5" />
