@@ -822,21 +822,21 @@ export default function AdminWithdrawalsPage() {
 
         {/* Floating Action Bar for Selected Items */}
         {Object.values(selectedIds).filter(Boolean).length > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-950 border border-indigo-500/30 rounded-2xl px-6 py-4 flex items-center gap-6 shadow-2xl z-50 animate-fade-in-up">
-            <span className="text-sm font-semibold text-white">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md sm:w-auto bg-gray-955 border border-indigo-500/30 rounded-2xl px-4 py-3 sm:px-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between sm:justify-start gap-3 sm:gap-6 shadow-2xl z-50 animate-fade-in-up">
+            <span className="text-xs sm:text-sm font-semibold text-white text-center sm:text-left">
               {Object.values(selectedIds).filter(Boolean).length} requests selected
             </span>
-            <div className="flex gap-2 relative">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start relative">
               <button
                 onClick={() => { setSelectedIds({}); setIsDownloadDropdownOpen(false); }}
-                className="px-4 py-2 hover:bg-gray-900 text-gray-400 hover:text-white text-xs font-semibold rounded-xl transition-all cursor-pointer"
+                className="px-3 py-2 sm:px-4 sm:py-2 hover:bg-gray-900 text-gray-400 hover:text-white text-[10px] sm:text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap"
               >
                 Clear Selection
               </button>
               <div className="relative">
                 <button
                   onClick={() => setIsDownloadDropdownOpen(!isDownloadDropdownOpen)}
-                  className="flex items-center gap-1.5 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-xs font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer whitespace-nowrap"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download
