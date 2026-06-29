@@ -75,7 +75,7 @@ export default function AdminWithdrawalsPage() {
     });
   };
 
-  const downloadData = (format: 'csv' | 'ssv') => {
+  const downloadData = async (format: 'csv' | 'ssv') => {
     const selectedWithdrawals = withdrawals.filter(w => selectedIds[w.id]);
     if (selectedWithdrawals.length === 0) {
       dispatch(addToast({ message: 'Please select at least one request to download.', type: 'error' }));
@@ -97,15 +97,15 @@ export default function AdminWithdrawalsPage() {
 
     const rows = selectedWithdrawals.map(w => [
       w.id,
-      w.user.email,
+      w.user?.email || 'N/A',
       w.method,
       w.amountUSD.toFixed(4),
       w.amountINR.toFixed(2),
-      w.accountHolder,
-      w.method === 'USDT' ? w.walletAddress : w.accountNumber,
-      w.method === 'USDT' ? 'N/A' : w.ifsc,
+      w.accountHolder || 'N/A',
+      w.method === 'USDT' ? (w.walletAddress || 'N/A') : (w.accountNumber || 'N/A'),
+      w.method === 'USDT' ? 'N/A' : (w.ifsc || 'N/A'),
       w.status,
-      new Date(w.createdAt).toLocaleString()
+      w.createdAt ? new Date(w.createdAt).toLocaleString() : 'N/A'
     ]);
 
     const delimiter = format === 'ssv' ? ';' : ',';
@@ -130,9 +130,7 @@ export default function AdminWithdrawalsPage() {
     // Save downloaded state in database
     try {
       const ids = selectedWithdrawals.map(w => w.id);
-      api.post('/admin/withdrawals/mark-downloaded', { ids }).catch(err => {
-        console.error('Failed to mark withdrawals as downloaded:', err);
-      });
+      await api.post('/admin/withdrawals/mark-downloaded', { ids });
       
       // Update local state
       setWithdrawals(prev => prev.map(w => ids.includes(w.id) ? { ...w, downloaded: true } : w));
@@ -367,7 +365,7 @@ export default function AdminWithdrawalsPage() {
                         <div>
                           <p className="text-sm text-gray-400">User</p>
                           <div className="flex items-center gap-2">
-                            <p className="text-white font-medium">{w.user.email} <span className="text-gray-500 text-xs">({w.user.userId})</span></p>
+                            <p className="text-white font-medium">{w.user?.email || 'Deleted User'} <span className="text-gray-500 text-xs">({w.user?.userId || 'N/A'})</span></p>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${
                               w.method === 'USDT'
                                 ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
@@ -493,7 +491,7 @@ export default function AdminWithdrawalsPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-white font-medium">{w.user.email}</p>
+                            <p className="text-white font-medium">{w.user?.email || 'Deleted User'}</p>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${
                               w.method === 'USDT'
                                 ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
@@ -599,13 +597,29 @@ export default function AdminWithdrawalsPage() {
         {/* Completed/Rejected */}
         {completedWithdrawals.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold text-gray-400 mb-4">Completed / Rejected</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-semibold text-gray-400">Completed / Rejected ({completedWithdrawals.length})</h2>
+              <button
+                onClick={() => toggleSelectAll(completedWithdrawals.map(w => w.id))}
+                className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold px-3 py-1.5 rounded-xl border border-gray-700 transition-all cursor-pointer"
+              >
+                {completedWithdrawals.every(w => selectedIds[w.id]) ? 'Deselect All Completed' : 'Select All Completed'}
+              </button>
+            </div>
             <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-lg overflow-hidden">
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-gray-800/50 text-gray-400">
                     <tr>
+                      <th className="px-6 py-4 font-medium text-center w-10">
+                        <input
+                          type="checkbox"
+                          checked={paginatedCompletedWithdrawals.length > 0 && paginatedCompletedWithdrawals.every(w => selectedIds[w.id])}
+                          onChange={() => toggleSelectAll(paginatedCompletedWithdrawals.map(w => w.id))}
+                          className="w-4 h-4 rounded border-gray-700 bg-gray-950 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer"
+                        />
+                      </th>
                       <th className="px-6 py-4 font-medium max-w-[180px]">User</th>
                       <th className="px-6 py-4 font-medium whitespace-nowrap">USDT</th>
                       <th className="px-6 py-4 font-medium whitespace-nowrap">INR</th>
@@ -619,8 +633,16 @@ export default function AdminWithdrawalsPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {paginatedCompletedWithdrawals.map((w) => (
-                      <tr key={w.id} className="hover:bg-gray-800/20 transition-colors border-b border-gray-800">
-                        <td className="px-6 py-4 text-gray-300 max-w-[180px] truncate" title={w.user.email}>{w.user.email}</td>
+                      <tr key={w.id} className={`hover:bg-gray-800/20 transition-colors border-b border-gray-800 ${selectedIds[w.id] ? 'bg-indigo-950/10' : ''}`}>
+                        <td className="px-6 py-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={!!selectedIds[w.id]}
+                            onChange={() => toggleSelect(w.id)}
+                            className="w-4 h-4 rounded border-gray-700 bg-gray-955 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-6 py-4 text-gray-300 max-w-[180px] truncate" title={w.user?.email || ''}>{w.user?.email || 'N/A'}</td>
                         <td className="px-6 py-4 font-medium text-white font-mono whitespace-nowrap">
                           {w.method === 'USDT' ? `$${w.amountUSD.toFixed(4)}` : '—'}
                         </td>
@@ -673,9 +695,17 @@ export default function AdminWithdrawalsPage() {
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-800">
                 {paginatedCompletedWithdrawals.map((w) => (
-                  <div key={w.id} className="p-4 space-y-4 hover:bg-gray-800/10 transition-colors">
+                  <div key={w.id} className={`p-4 space-y-4 hover:bg-gray-800/10 transition-colors ${selectedIds[w.id] ? 'bg-indigo-950/10' : ''}`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]">{w.user.email}</span>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={!!selectedIds[w.id]}
+                          onChange={() => toggleSelect(w.id)}
+                          className="w-4 h-4 rounded border-gray-700 bg-gray-955 text-indigo-600 focus:ring-indigo-500/50 cursor-pointer shrink-0"
+                        />
+                        <span className="text-xs font-semibold text-gray-300 truncate max-w-[180px]" title={w.user?.email || ''}>{w.user?.email || 'N/A'}</span>
+                      </div>
                       <span className={statusBadge(w.status)}>{w.status}</span>
                     </div>
                     <div className="flex items-center justify-between text-xs">
