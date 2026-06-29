@@ -27,6 +27,8 @@ interface AdminStats {
   totalUsers: number;
   totalDepositsUSD: number;
   totalWithdrawalsINR: number;
+  todayDepositsUSD: number;
+  todayWithdrawalsINR: number;
   pendingRequests: number;
   pendingDeposits: number;
   pendingWithdrawals: number;
@@ -123,7 +125,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Total Deposits */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg flex flex-col justify-between">
           <div className="flex items-center gap-3.5">
             <div className="p-3 bg-green-500/10 rounded-xl">
               <ArrowDownToLine className="w-5 h-5 text-green-400" />
@@ -131,12 +133,15 @@ const AdminDashboard = () => {
             <div>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Deposits</p>
               <h3 className="text-xl font-bold text-white mt-0.5 font-mono">${stats?.totalDepositsUSD?.toFixed(4) || '0.0000'}</h3>
+              <p className="text-[10px] text-green-400 font-semibold mt-1 font-mono">
+                Today: ${stats?.todayDepositsUSD?.toFixed(4) || '0.0000'}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Total Withdrawn */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4.5 shadow-lg flex flex-col justify-between">
           <div className="flex items-center gap-3.5">
             <div className="p-3 bg-orange-500/10 rounded-xl">
               <ArrowUpFromLine className="w-5 h-5 text-orange-400" />
@@ -144,6 +149,9 @@ const AdminDashboard = () => {
             <div>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Withdrawn</p>
               <h3 className="text-xl font-bold text-white mt-0.5 font-mono">₹{stats?.totalWithdrawalsINR?.toLocaleString('en-IN') || '0'}</h3>
+              <p className="text-[10px] text-orange-400 font-semibold mt-1 font-mono">
+                Today: ₹{stats?.todayWithdrawalsINR?.toLocaleString('en-IN') || '0'}
+              </p>
             </div>
           </div>
         </div>

@@ -27,17 +27,34 @@ export async function GET() {
     }
 
     // Fetch counts and sums
-    const [usersCount, depositsRes, withdrawalsRes, pendingDepositsCount, pendingWithdrawalsCount] = await Promise.all([
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startOfTodayISO = startOfToday.toISOString();
+
+    // Fetch counts and sums
+    const [
+      usersCount,
+      depositsRes,
+      withdrawalsRes,
+      pendingDepositsCount,
+      pendingWithdrawalsCount,
+      todayDepositsRes,
+      todayWithdrawalsRes
+    ] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'USER'),
       supabase.from('wallet_deposits').select('amount_usd').in('status', ['APPROVED', 'SUCCESS']),
       supabase.from('withdrawals').select('amount_inr').eq('status', 'PAID'),
       supabase.from('wallet_deposits').select('id', { count: 'exact', head: true }).in('status', ['PENDING', 'CANCEL_REQUESTED']),
       supabase.from('withdrawals').select('id', { count: 'exact', head: true }).in('status', ['PENDING', 'CANCEL_REQUESTED']),
+      supabase.from('wallet_deposits').select('amount_usd').in('status', ['APPROVED', 'SUCCESS']).gte('created_at', startOfTodayISO),
+      supabase.from('withdrawals').select('amount_inr').eq('status', 'PAID').gte('created_at', startOfTodayISO),
     ]);
 
     const totalUsers = usersCount.count || 0;
     const totalDepositsUSD = (depositsRes.data || []).reduce((acc, d) => acc + d.amount_usd, 0);
     const totalWithdrawalsINR = (withdrawalsRes.data || []).reduce((acc, w) => acc + w.amount_inr, 0);
+    const todayDepositsUSD = (todayDepositsRes.data || []).reduce((acc, d) => acc + d.amount_usd, 0);
+    const todayWithdrawalsINR = (todayWithdrawalsRes.data || []).reduce((acc, w) => acc + w.amount_inr, 0);
     const pendingDeposits = pendingDepositsCount.count || 0;
     const pendingWithdrawals = pendingWithdrawalsCount.count || 0;
     const pendingRequests = pendingDeposits + pendingWithdrawals;
@@ -65,6 +82,8 @@ export async function GET() {
       totalUsers,
       totalDepositsUSD,
       totalWithdrawalsINR,
+      todayDepositsUSD,
+      todayWithdrawalsINR,
       pendingRequests,
       pendingDeposits,
       pendingWithdrawals,
