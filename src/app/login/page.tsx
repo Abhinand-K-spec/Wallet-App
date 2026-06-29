@@ -195,9 +195,7 @@ const LoginPage = () => {
         
         {/* Top Branding */}
         <div className="flex items-center gap-3 relative z-10">
-          <div className="bg-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30 border border-indigo-400/20">
-            <Wallet className="w-5 h-5 text-white" />
-          </div>
+          <img src="/favicon.png" alt="GetPay Logo" className="w-10 h-10 rounded-xl object-contain" />
           <span className="text-2xl font-black bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
         </div>
 
@@ -272,9 +270,7 @@ const LoginPage = () => {
             
             {/* Mobile branding */}
             <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg border border-indigo-400/20">
-                <Wallet className="w-4 h-4 text-white" />
-              </div>
+              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
               <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
             </div>
 
@@ -355,9 +351,7 @@ const LoginPage = () => {
           <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
             {/* Mobile branding */}
             <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg border border-indigo-400/20">
-                <Wallet className="w-4 h-4 text-white" />
-              </div>
+              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
               <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
             </div>
 
@@ -429,9 +423,7 @@ const LoginPage = () => {
           <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
             {/* Mobile branding */}
             <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg border border-indigo-400/20">
-                <Wallet className="w-4 h-4 text-white" />
-              </div>
+              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
               <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
             </div>
 

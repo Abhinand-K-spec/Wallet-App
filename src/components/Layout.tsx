@@ -47,9 +47,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar (Desktop) */}
       <aside className="w-64 bg-gray-900/60 backdrop-blur-xl border-r border-gray-800/80 flex flex-col hidden md:flex shrink-0 relative z-10">
         <div className="h-16 flex items-center px-6 border-b border-gray-800/80">
-          <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/20 border border-indigo-400/20 mr-2.5">
-            <Wallet className="w-4.5 h-4.5 text-white" />
-          </div>
+          <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg mr-2.5 object-contain" />
           <span className="text-xl font-black bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">GetPay</span>
         </div>
         
@@ -114,9 +112,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="relative w-full max-w-[280px] bg-gray-900 border-r border-gray-850 flex flex-col p-6 animate-slide-in">
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
               <div className="flex items-center">
-                <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg mr-2">
-                  <Wallet className="w-4 h-4 text-white" />
-                </div>
+                <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg mr-2 object-contain" />
                 <span className="text-xl font-black bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">GetPay</span>
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 rounded-lg text-gray-400 hover:text-white bg-gray-800/50 cursor-pointer">
@@ -186,9 +182,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800/50 mr-1 cursor-pointer">
               <Menu className="w-6 h-6" />
             </button>
-            <div className="bg-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg border border-indigo-400/20">
-              <Wallet className="w-4.5 h-4.5 text-white" />
-            </div>
+            <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg mr-2 object-contain" />
             <span className="text-lg font-bold bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">GetPay</span>
           </div>
           <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg cursor-pointer transition-all">
