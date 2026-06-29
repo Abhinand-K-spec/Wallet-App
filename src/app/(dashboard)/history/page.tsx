@@ -308,9 +308,14 @@ export default function HistoryPage() {
                               {tx.status}
                             </span>
                             {tx.status === 'APPROVED' && tx.transactionType === 'WITHDRAWAL' && (
-                              <span className="text-[10px] text-blue-400 font-semibold block leading-tight mt-0.5">
-                                The amount will credit in your ac within 3 hours
-                              </span>
+                              <div className="space-y-0.5 mt-0.5">
+                                <span className="text-[10px] text-amber-500 font-semibold block leading-tight animate-pulse">
+                                  Transaction Pending
+                                </span>
+                                <span className="text-[10px] text-gray-400 block leading-tight">
+                                  The amount will credit in your a/c within 3 hours
+                                </span>
+                              </div>
                             )}
                             {(tx.status === 'PAID' || tx.status === 'COMPLETED' || tx.status === 'SUCCESS') && tx.utr && (
                               <span className="text-[10px] text-indigo-400 font-mono block leading-tight mt-0.5 select-all">
@@ -447,9 +452,14 @@ export default function HistoryPage() {
                       </button>
                     )}
                     {tx.status === 'APPROVED' && tx.transactionType === 'WITHDRAWAL' && (
-                      <p className="text-[9px] text-blue-400 font-medium">
-                        The amount will credit in your ac after 3 hours
-                      </p>
+                      <div className="space-y-0.5 mt-1.5">
+                        <span className="text-[10px] text-amber-500 font-semibold block leading-tight animate-pulse">
+                          Transaction Pending
+                        </span>
+                        <span className="text-[9px] text-gray-400 block leading-tight">
+                          The amount will credit in your a/c within 3 hours
+                        </span>
+                      </div>
                     )}
                     <div className="text-[10px] text-gray-500 flex flex-col gap-0.5 pt-2 border-t border-gray-800/30">
                       <div className="flex justify-between">

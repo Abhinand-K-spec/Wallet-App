@@ -296,6 +296,11 @@ const UserDashboard = () => {
                             <span className={statusBadge(tx.status)}>
                               {tx.status}
                             </span>
+                            {tx.status === 'APPROVED' && tx.transactionType === 'WITHDRAWAL' && (
+                              <span className="text-[10px] text-amber-500 font-semibold block leading-tight mt-0.5 animate-pulse">
+                                Transaction Pending
+                              </span>
+                            )}
                             {tx.transactionType === 'WITHDRAWAL' && ['PAID', 'COMPLETED', 'SUCCESS', 'APPROVED'].includes(tx.status) && (
                               <button
                                 onClick={() => {
@@ -338,9 +343,16 @@ const UserDashboard = () => {
                           {tx.transactionType === 'DEPOSIT' ? <ArrowDownToLine className="w-3.5 h-3.5" /> : <ArrowUpFromLine className="w-3.5 h-3.5" />}
                           {tx.transactionType}
                         </span>
-                        <span className={statusBadge(tx.status)}>
-                          {tx.status}
-                        </span>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={statusBadge(tx.status)}>
+                            {tx.status}
+                          </span>
+                          {tx.status === 'APPROVED' && tx.transactionType === 'WITHDRAWAL' && (
+                            <span className="text-[9px] text-amber-500 font-semibold animate-pulse leading-none">
+                              Transaction Pending
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center justify-between text-xs">
                         <div>
