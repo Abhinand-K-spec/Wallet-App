@@ -194,9 +194,8 @@ const LoginPage = () => {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
         
         {/* Top Branding */}
-        <div className="flex items-center gap-3 relative z-10">
-          <img src="/favicon.png" alt="GetPay Logo" className="w-10 h-10 rounded-xl object-contain" />
-          <span className="text-2xl font-black bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+        <div className="relative z-10">
+          <img src="/favicon.png" alt="GetPay Logo" className="w-20 h-20 object-contain" />
         </div>
 
         {/* Center Content */}
@@ -269,9 +268,8 @@ const LoginPage = () => {
             <div className="absolute -right-10 -bottom-10 w-36 h-36 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
             
             {/* Mobile branding */}
-            <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+            <div className="flex justify-center lg:hidden mb-6">
+              <img src="/favicon.png" alt="GetPay Logo" className="w-14 h-14 object-contain" />
             </div>
 
             <div className="text-center mb-8">
@@ -350,9 +348,8 @@ const LoginPage = () => {
         ) : isForgotPassword ? (
           <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
             {/* Mobile branding */}
-            <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+            <div className="flex justify-center lg:hidden mb-6">
+              <img src="/favicon.png" alt="GetPay Logo" className="w-14 h-14 object-contain" />
             </div>
 
             <div className="text-center mb-8">
@@ -422,9 +419,8 @@ const LoginPage = () => {
         ) : (
           <div className="max-w-md w-full bg-gray-900/60 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden hover:border-gray-800/80 transition-all duration-300">
             {/* Mobile branding */}
-            <div className="flex items-center gap-2 justify-center lg:hidden mb-6">
-              <img src="/favicon.png" alt="GetPay Logo" className="w-8 h-8 rounded-lg object-contain" />
-              <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-indigo-400 bg-clip-text text-transparent">GetPay</span>
+            <div className="flex justify-center lg:hidden mb-6">
+              <img src="/favicon.png" alt="GetPay Logo" className="w-14 h-14 object-contain" />
             </div>
 
             <div className="text-center mb-8">
